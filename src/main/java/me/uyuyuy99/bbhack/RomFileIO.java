@@ -1,31 +1,17 @@
 package me.uyuyuy99.bbhack;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
 
 public class RomFileIO {
 	
-	static final int ROM_SIZE = 524304;
-	short[] data;
+	byte[] data;
 	File rompath;
 	
 	public RomFileIO(File rompathGiven) {
-		this.rompath = rompathGiven;
-		data = new short[ROM_SIZE];
-		
-		try {
-			RandomAccessFile rom = loadRead(rompath);
-			
-			for (int i=0; i<ROM_SIZE; i++) {
-				data[i] = rom.readByte();
-			}
-			
-			rom.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		load(rompathGiven);
 	}
 	
 	public RomFileIO() {
@@ -33,16 +19,11 @@ public class RomFileIO {
 	}
 	
 	public void load(File rompathGiven) {
-		this.rompath = rompathGiven;
-		data = new short[ROM_SIZE];
-		
+		rompath = rompathGiven;
 		try {
-			RandomAccessFile rom = loadRead(rompath);
-			
-			for (int i=0; i<ROM_SIZE; i++) {
-				data[i] = rom.readByte();
-			}
-			
+			RandomAccessFile rom = new RandomAccessFile(rompath, "r");
+			data = new byte[(int) rom.length()];
+			rom.readFully(data);
 			rom.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -51,61 +32,57 @@ public class RomFileIO {
 	
 	public void save() {
 		try {
-			RandomAccessFile rom = loadWrite(rompath);
-			
-			for (int i=0; i<ROM_SIZE; i++) {
-				rom.writeByte(data[i]);
-			}
-			
+			RandomAccessFile rom = new RandomAccessFile(rompath, "w");
+			rom.write(data);
 			rom.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public short get(int offset) {
+
+	//get and return the actual byte
+	public byte getT(int offset) {
 		if (data.length >= offset)
-			return (short) (data[offset] & 0xff);
+			return data[offset];
 		return (byte) 0;
 	}
-	
-	public short[] get(int offset, int length) {
-		if (data.length >= offset) {
-			short[] bytes = new short[length];
-			for (int i=0; i<length; i++) {
-				bytes[i] = data[offset + i];
-			}
-			return bytes;
+	public byte[] getT(int offset, int length) {
+		byte[] bytes = new byte[length];
+		//could probably be improved. whatever
+		for (int i=0; i<length; i++) {
+			bytes[i] = getT(offset + i);
 		}
-		return new short[length];
+		return bytes;
+	}
+
+	//get straight to int.
+	public int get(int offset) {
+		if (data.length >= offset)
+			return Byte.toUnsignedInt(data[offset]);
+		return 0;
+	}
+	public int[] get(int offset, int length) {
+		int[] bytes = new int[length];
+		//could probably be improved. whatever
+		for (int i=0; i<length; i++) {
+			bytes[i] = get(offset + i);
+		}
+		return bytes;
 	}
 	
-	public void write(int offset, short b) {
+	public void write(int offset, byte b) {
 		data[offset] = b;
 	}
 	
-	private RandomAccessFile loadRead(File rompath) throws FileNotFoundException, IOException {
-		RandomAccessFile rom = new RandomAccessFile(rompath, "r");
-		return rom;
-    }
-	
-	private RandomAccessFile loadWrite(File rompath) throws FileNotFoundException, IOException {
-		RandomAccessFile rom = new RandomAccessFile(rompath, "rw");
-		return rom;
-    }
-	
 	public void saveMap() {
 		try {
-			RandomAccessFile rom = loadWrite(rompath);
+			RandomAccessFile rom = new RandomAccessFile(rompath, "w");
 			
 			final int START = 0x2010;
 			final int END = 0x20010;
-			
+
 			rom.seek(START);
-			for (int i=START; i<END; i++) {
-				rom.writeByte(data[i]);
-			}
-			
+			rom.write(Arrays.copyOfRange(data, START, END));
 			rom.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -114,16 +91,13 @@ public class RomFileIO {
 	
 	public void saveObjects() {
 		try {
-			RandomAccessFile rom = loadWrite(rompath);
+			RandomAccessFile rom = new RandomAccessFile(rompath, "w");
 			
 			final int START = 0x20010;
 			final int END = 0x25DF6;
-			
+
 			rom.seek(START);
-			for (int i=START; i<END; i++) {
-				rom.writeByte(data[i]);
-			}
-			
+			rom.write(Arrays.copyOfRange(data, START, END));
 			rom.close();
 		} catch (IOException e) {
 			e.printStackTrace();

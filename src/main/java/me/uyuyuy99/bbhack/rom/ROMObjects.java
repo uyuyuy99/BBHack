@@ -306,7 +306,7 @@ public class ROMObjects {
 	public void save() {
 		//First, fill with free space
 		for (int i=0x20010; i<0x25DF6; i++) {
-			main.rom.write(i, (short) 0xFF);
+			main.rom.write(i, (byte) 0xFF);
 		}
 		//Then, set up variables
 		int curBank = 0;
@@ -327,8 +327,8 @@ public class ROMObjects {
 			}
 			//Add entry to area pointer table
 			int pointer1 = table2Offs - offset;
-			main.rom.write(table1Offs, (short) (pointer1 % 256));
-			main.rom.write(table1Offs+1, (short) ((pointer1 / 256) + 128));
+			main.rom.write(table1Offs, (byte) (pointer1 % 256));
+			main.rom.write(table1Offs+1, (byte) ((pointer1 / 256) + 128));
 			
 			int curOffs = table2Offs + ((getObjectsInArea(area)+1) * 2); //Add 1 for the 00 00 on the end
 			for (int objectNum=0; objectNum<getObjectsInArea(area); objectNum++) {
@@ -340,48 +340,48 @@ public class ROMObjects {
 				
 				//Add entry to object pointer table
 				int pointer2 = curOffs - offset;
-				main.rom.write(table2Offs, (short) (pointer2 % 256));
-				main.rom.write(table2Offs+1, (short) ((pointer2 / 256) + 128));
+				main.rom.write(table2Offs, (byte) (pointer2 % 256));
+				main.rom.write(table2Offs+1, (byte) ((pointer2 / 256) + 128));
 				
 				//Store standard portion of header
-				main.rom.write(curOffs, (short) (object.getType() + ((object.getX() % 4) * 64)));
-				main.rom.write(curOffs+1, (short) (object.getX() / 4));
-				main.rom.write(curOffs+2, (short) (object.getDir() + ((object.getY() % 4) * 64)));
-				main.rom.write(curOffs+3, (short) ((object.getY() + 128) / 4));
+				main.rom.write(curOffs, (byte) (object.getType() + ((object.getX() % 4) * 64)));
+				main.rom.write(curOffs+1, (byte) (object.getX() / 4));
+				main.rom.write(curOffs+2, (byte) (object.getDir() + ((object.getY() % 4) * 64)));
+				main.rom.write(curOffs+3, (byte) ((object.getY() + 128) / 4));
 				
 				//Store variable portion of header
 				if (headerLength == 8) {
 					if (object.getType() == 32) {
 						int pointerSprite = objects[area][objectNum].getSprite();
-						main.rom.write(curOffs+4, (short) (pointerSprite % 256));
-						main.rom.write(curOffs+5, (short) ((pointerSprite / 256) + 128));
-						main.rom.write(curOffs+6, (short) (object.getPresentItem()));
-						main.rom.write(curOffs+7, (short) (object.getPresentId()));
+						main.rom.write(curOffs+4, (byte) (pointerSprite % 256));
+						main.rom.write(curOffs+5, (byte) ((pointerSprite / 256) + 128));
+						main.rom.write(curOffs+6, (byte) (object.getPresentItem()));
+						main.rom.write(curOffs+7, (byte) (object.getPresentId()));
 					} else {
-						main.rom.write(curOffs+4, (short) (object.getTargetMusic() + ((object.getTargetX() % 4) * 64)));
-						main.rom.write(curOffs+5, (short) (object.getTargetX() / 4));
-						main.rom.write(curOffs+6, (short) (object.getTargetDir() + ((object.getTargetY() % 4) * 64)));
-						main.rom.write(curOffs+7, (short) ((object.getTargetY() + 128) / 4));
+						main.rom.write(curOffs+4, (byte) (object.getTargetMusic() + ((object.getTargetX() % 4) * 64)));
+						main.rom.write(curOffs+5, (byte) (object.getTargetX() / 4));
+						main.rom.write(curOffs+6, (byte) (object.getTargetDir() + ((object.getTargetY() % 4) * 64)));
+						main.rom.write(curOffs+7, (byte) ((object.getTargetY() + 128) / 4));
 					}
 				} else if (headerLength == 6) {
 					int pointerSprite = objects[area][objectNum].getSprite();
-					main.rom.write(curOffs+4, (short) (pointerSprite % 256));
-					main.rom.write(curOffs+5, (short) ((pointerSprite / 256) + 128));
+					main.rom.write(curOffs+4, (byte) (pointerSprite % 256));
+					main.rom.write(curOffs+5, (byte) ((pointerSprite / 256) + 128));
 				}
 				
 				for (int i=0; i<object.script.size(); i++) {
 					int scriptOffs = curOffs + headerLength + i;
-					main.rom.write(scriptOffs, object.script.get(i).shortValue());
+					main.rom.write(scriptOffs, object.script.get(i).byteValue());
 				}
 				
 				curOffs += headerLength + object.script.size();
 				table2Offs += 2;
 			}
-			main.rom.write(table2Offs, (short) 0);
-			main.rom.write(table2Offs+1, (short) 0);
+			main.rom.write(table2Offs, (byte) 0);
+			main.rom.write(table2Offs+1, (byte) 0);
 			if (area == 0) {
-				main.rom.write(table2Offs+2, (short) 0);
-				main.rom.write(table2Offs+3, (short) 0);
+				main.rom.write(table2Offs+2, (byte) 0);
+				main.rom.write(table2Offs+3, (byte) 0);
 				table2Offs += 2;
 				curOffs += 2;
 			}
@@ -401,9 +401,9 @@ public class ROMObjects {
 			ObjectInfo object = objects[area][objectNum];
 			
 			int pointerObject = (objects[targetArea][targetObjectNum].pointer - 16) % 0x2000;
-			main.rom.write(object.pointer+index, (short) (pointerObject % 256));
-			main.rom.write(object.pointer+index+1, (short) ((pointerObject / 256) + 128));
-			main.rom.write(object.pointer+index+2, (short) targetIndex);
+			main.rom.write(object.pointer+index, (byte) (pointerObject % 256));
+			main.rom.write(object.pointer+index+1, (byte) ((pointerObject / 256) + 128));
+			main.rom.write(object.pointer+index+2, (byte) targetIndex);
 		}
 		for (Entry<ObjectPosition, Integer> entry : pointersToJumps.entrySet()) {
 			/*
@@ -436,8 +436,8 @@ public class ROMObjects {
 			pointerObject -= 0x20010;
 			if (targetArea >= 26) pointerObject -= 0x2000;
 			if (targetArea >= 43) pointerObject -= 0x2000;
-			main.rom.write(object.pointer+index, (short) (pointerObject % 256));
-			main.rom.write(object.pointer+index+1, (short) ((pointerObject / 256) + 128));
+			main.rom.write(object.pointer+index, (byte) (pointerObject % 256));
+			main.rom.write(object.pointer+index+1, (byte) ((pointerObject / 256) + 128));
 		}
 		
 		main.rom.saveObjects(); // Save
