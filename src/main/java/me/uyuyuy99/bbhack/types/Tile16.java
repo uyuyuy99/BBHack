@@ -1,4 +1,4 @@
-package me.uyuyuy99.bbhack.tiles;
+package me.uyuyuy99.bbhack.types;
 
 
 public class Tile16 {

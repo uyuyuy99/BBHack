@@ -4,7 +4,7 @@ import javax.swing.*;
 
 import me.uyuyuy99.bbhack.MainMenu;
 import me.uyuyuy99.bbhack.rom.ROMPalettes;
-import me.uyuyuy99.bbhack.tiles.*;
+import me.uyuyuy99.bbhack.types.*;
 
 import java.awt.*;
 import java.awt.event.ItemEvent;

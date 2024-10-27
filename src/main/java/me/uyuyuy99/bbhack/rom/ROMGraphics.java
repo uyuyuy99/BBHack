@@ -3,9 +3,9 @@ package me.uyuyuy99.bbhack.rom;
 import java.util.ArrayList;
 
 import me.uyuyuy99.bbhack.MainMenu;
-import me.uyuyuy99.bbhack.tiles.Tile16;
-import me.uyuyuy99.bbhack.tiles.Tile64;
-import me.uyuyuy99.bbhack.tiles.Tile8;
+import me.uyuyuy99.bbhack.types.Tile16;
+import me.uyuyuy99.bbhack.types.Tile64;
+import me.uyuyuy99.bbhack.types.Tile8;
 
 public class ROMGraphics {
 	
@@ -14,6 +14,9 @@ public class ROMGraphics {
 	public Tile8[] graphics8;
 	public Tile16[] graphics16;
 	public Tile64[] graphics64;
+	//the tiles needed to reconstruct character/object sprites
+	public Tile8[] characters;
+	public byte[] areaTable;
 
 
 	int chr_start = 0x40010; //start of chr rom
@@ -25,6 +28,7 @@ public class ROMGraphics {
 		graphics8 = new Tile8[0x40 * 0x20]; //Tiles per tileset times # of tilesets
 		graphics16 = new Tile16[0x200 * 8]; //Bank size times # of banks
 		graphics64 = new Tile64[0x100 * 8]; //Bank size times # of banks
+		characters = new Tile8[0x80*12];
 		
 		/*
 		 * The first part of this constructor gets the raw graphics data
@@ -35,7 +39,50 @@ public class ROMGraphics {
 		for (int i=0; i<graphics8.length; i++) {
 			graphics8[i] = new Tile8();
 		}
-		
+
+
+
+		for (int i = 0; i < characters.length; i++) {
+			characters[i] = new Tile8();
+		}
+
+		//start of character/object chr banks
+		int characters_start = chr_start+0x18000;
+		for(int tile = 0; tile < characters.length; tile++){
+			int newAddr = (tile * 0x10) + characters_start;
+			byte[] bytes = main.rom.getT(newAddr, 0x10);
+			int[] palette = new int[8*8];
+			for (int n = 0; n < bytes.length / 2; n++) {
+				byte bpl1 = bytes[n];
+				byte bpl2 = bytes[n+8];
+				int i = 7;
+				for (byte bit = 1; bit != 0; bit = (byte) (bit << 1)){
+					//get each pixel
+					int bpl1Result = ((bpl1 & bit) != 0) ? 1 : 0;
+					int bpl2Result = ((bpl2 & bit) != 0) ? 2 : 0; //lsh 1
+					palette[(n*8)+i] = bpl1Result | bpl2Result;
+					i--;
+				}
+			}
+			for (int i = 0; i < palette.length; i++){
+				characters[tile].setValue(i, palette[i]);
+			}
+		}
+		//area bank lookup table
+		areaTable = main.rom.getT(0x3D644, 0x3D644+0x40);
+
+
+
+
+
+
+
+
+
+
+
+
+
 		for (int tileset=0; tileset<0x20; tileset++) {
 			for (int tile=0; tile<0x40; tile++) { //64 8x8 tiles in each tileset
 				byte[] bytes1 = main.rom.getT(chr_start + tileset * 0x400 + tile * 0x10, 8);
