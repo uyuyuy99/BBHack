@@ -60,13 +60,14 @@ public interface Info {
 	};
 	
 	public static final String[] characterNames = {
+		"(blank)",
 		"Ninten",
 		"Ana",
 		"Loid",
 		"Teddy",
 		"Pippi",
+		"EVE",
 		"Flying Man",
-		"EVE"
 	};
 	
 	public static final String[] musicNames = {
@@ -310,7 +311,7 @@ public interface Info {
 	
 	public static final String forumThread = "http://bit.ly/BBHackThread";
 	
-	public static final String version = "2.0";
+	public static final String version = "2.0.1";
 	
 	public static final String aboutMessage =
 			"<html><body style='font-size:10px; font-family:Verdana;'><center><b>BB Hack v" + version + "<br/>" +

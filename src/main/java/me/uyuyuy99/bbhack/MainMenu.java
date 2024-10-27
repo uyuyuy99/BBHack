@@ -168,6 +168,15 @@ public class MainMenu extends JFrame {
 				}
 			}
 		);
+
+//		c.gridx = 0; c.gridy = 4;
+//		JButton buttonDebug = new JButton("Debug");
+//		panel.add(buttonDebug, c);
+//		buttonDebug.addActionListener((event) -> {
+//			if (rom.rompath != null) {
+//				System.out.println();
+//			}
+//		});
 		
 		//Icon iconEnemyGroups = new ImageIcon(getClass().getResource("/icons/enemygroup_editor.png"));
 		//buttonEnemyGroups.setIcon(iconEnemyGroups);
