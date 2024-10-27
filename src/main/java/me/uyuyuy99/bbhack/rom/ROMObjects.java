@@ -109,7 +109,7 @@ public class ROMObjects {
 						script.add(i, curByte);
 					}
 					
-					System.out.println(area + " " + objectNum);
+//					System.out.println(area + " " + objectNum);
 					objects[area][objectNum] = new ObjectInfo(type, dir, x, y, script, pointer2); //Finally, initialize the object... object :P
 					
 					//Load variable portion of header
@@ -213,13 +213,13 @@ public class ROMObjects {
 							if (ObjectInfo.getCodeArgumentSize(code) == -1) {
 								if (code < 0x6C	) {
 									for (int j : script) {
-										System.out.print(Integer.toHexString(j) + " ");
+//										System.out.print(Integer.toHexString(j) + " ");
 									}
-									System.out.println();
-									System.out.println("Object Offset: 0x" + Integer.toHexString(object.pointer));
-									System.out.println("x: " + object.getX() + ", y: " + object.getY());
-									System.out.println("Code: 0x" + Integer.toHexString(code));
-									System.out.println();
+//									System.out.println();
+//									System.out.println("Object Offset: 0x" + Integer.toHexString(object.pointer));
+//									System.out.println("x: " + object.getX() + ", y: " + object.getY());
+//									System.out.println("Code: 0x" + Integer.toHexString(code));
+//									System.out.println();
 								}
 								object.editable = false;
 								break;

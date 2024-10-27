@@ -9,8 +9,8 @@
     <version>2.0.0</version>
 
     <properties>
-        <maven.compiler.source>7</maven.compiler.source>
-        <maven.compiler.target>7</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -29,7 +29,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>bbhack.BBHack</mainClass>
+                            <mainClass>me.uyuyuy99.bbhack.BBHack</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
