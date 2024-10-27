@@ -4,7 +4,7 @@ import javax.swing.*;
 
 import me.uyuyuy99.bbhack.MainMenu;
 import me.uyuyuy99.bbhack.rom.ROMPalettes;
-import me.uyuyuy99.bbhack.tiles.Tile64;
+import me.uyuyuy99.bbhack.types.Tile64;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

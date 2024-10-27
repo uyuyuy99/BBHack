@@ -16,10 +16,17 @@ import me.uyuyuy99.bbhack.MainMenu;
 import me.uyuyuy99.bbhack.ObjectInfo;
 import me.uyuyuy99.bbhack.rom.ROMObjects;
 import me.uyuyuy99.bbhack.rom.ROMPalettes;
-import me.uyuyuy99.bbhack.tiles.Tile64;
+import me.uyuyuy99.bbhack.types.Tile64;
+
+import me.uyuyuy99.bbhack.types.SpriteDef;
+import me.uyuyuy99.bbhack.types.Sprite;
+import me.uyuyuy99.bbhack.types.EBObjects.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PanelMap extends JPanel implements Info {
-	
+
 	private MainMenu main;
 	private PanelChunkSelectME panelChunkSelect;
 	
@@ -60,6 +67,7 @@ public class PanelMap extends JPanel implements Info {
 	
 	private static final long serialVersionUID = 1L;
 	private BufferedImage[][] mapGraphics;
+	private List<BufferedImage> objectGraphics;
 	
 	//Current scroll-bar view coordinates (UNITS: 64x64 tiles)
 	int viewX = 0;
@@ -215,7 +223,7 @@ public class PanelMap extends JPanel implements Info {
 			}
 		);
 	}
-	
+
 	public void setPanelChunkSelect(PanelChunkSelectME panel) {
 		panelChunkSelect = panel;
 	}
@@ -538,25 +546,168 @@ public class PanelMap extends JPanel implements Info {
 		mapGraphics = tempGraphics; //After done drawing, reset cache
 		
 		//System.out.println("LAG: " + (System.currentTimeMillis() - before) + "ms");
+
+
+
+
+
+		objectGraphics = new ArrayList<>();
+		if(true){
+			for (List<List<EBObject>> bank : main.objects_eb.Banks) {
+				for (List<EBObject> area_bank : bank) {
+					for (EBObject object : area_bank){
+						int fixObjX = object.x*2;
+						int fixObjY = (object.y-0x81)*2;
+						int offsetX = (fixObjX * 8);
+						int offsetY = (fixObjY * 8);
+						int viewXFix = viewX * 64;
+						int viewYFix = viewY * 64;
+						int viewWidthFix = viewWidth * 64;
+						int viewHeightFix = viewHeight * 64;
+						if(offsetX < viewXFix || offsetX > viewXFix+viewWidthFix){continue;}
+						if(offsetY < viewYFix || offsetY > viewYFix+viewHeightFix){continue;}
+						offsetX -= viewXFix;
+						offsetY -= viewYFix-8;
+
+						if(object instanceof EBNPC){
+							SpriteDef def = ((EBNPC) object).mysprite;
+							if(def != null){
+								int calcId = def.offset;
+								int sectorX = object.x / 16;
+								int sectorY = (object.y - 0x80) / 16;
+								int myarea = main.map.sectorAreaGet(sectorX, sectorY);
+								if(calcId >= 0x80){
+									calcId -= 0x80;
+								}
+								else {
+									myarea=0;
+								}
+								drawSpriteDef(g, def, calcId, myarea, fixObjX, fixObjY, 2, 2);
+							}
+						}else if(object instanceof EBDoor){
+							Image image = new ImageIcon(Info.class.getResource("/tiles/door.png")).getImage();
+							Graphics2D g2 = (Graphics2D) g;
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,.75f));
+							g.drawImage(image, offsetX, offsetY, 16, 16, null);
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+						}else if(object instanceof EBFlagSet){
+							Image image = new ImageIcon(Info.class.getResource("/tiles/setflag.png")).getImage();
+							Graphics2D g2 = (Graphics2D) g;
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,.75f));
+							g.drawImage(image, offsetX, offsetY, 16, 16, null);
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
+						}else{
+							Image image = new ImageIcon(Info.class.getResource("/tiles/unk.png")).getImage();
+							g.drawImage(image, offsetX, offsetY, 16, 16, null);
+						}
+					}
+				}
+			}
+
+		}
+		//int fucker = 0;
+		//drawSpriteDef(g, fucker, main.sprites.Definitions[fucker].offset, 0, 0, 0, 2, 2);
 	}
-	
+
+	//width + height is kinda tacky. pls find some other way to calc sprites
+	public void drawSpriteDef(Graphics g, int i, int offset, int area, int x, int y, int width, int height){
+		if(main.sprites.Definitions[i].spriteStart == -1) return;
+		for (int z = 0; z < width * height; z++){
+			Sprite hi = main.sprites.Sprites[main.sprites.Definitions[i].spriteStart+z];
+			drawCharTile(g, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
+		}
+	}
+	public void drawSpriteDef(Graphics g, SpriteDef Definition, int offset, int area, int x, int y, int width, int height){
+		if(Definition.spriteStart == -1) return;
+		for (int z = 0; z < width * height; z++){
+			Sprite hi = main.sprites.Sprites[Definition.spriteStart+z];
+			drawCharTile(g, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
+		}
+	}
+
+	//dummy palette
+	int[] fakeColors = {
+			0,0,0,0,
+			0,0,0,255,
+			181,50,32,255,
+			247,217,166,255
+	};
+	//function to draw  a character tile from the spritedefs
+	public void drawCharTile(Graphics g, int id, int area, int x, int y, int subX, int subY, boolean flipX, boolean flipY){
+
+		//draw char stuff
+
+		//use the area lookup table to get the general chr id
+		//if (area == 0){area = 1;}
+		byte bank = main.gfx.areaTable[area];
+		if(area == 0 || bank == 0){
+			bank = 0x60;
+		}
+		//offset from start of chr
+		int addr = (Byte.toUnsignedInt(bank) * 0x400);
+		//ofset from start of the character chr
+		int chroff = (addr - 0x18000)/0x10;
+		int calcId = id + chroff;
+		if (calcId < 0){
+			calcId = calcId;
+		}
+
+		//x*y*rgb
+		int[] pixels = new int[8*8*4];
+		for (int j = 0; j < pixels.length; j+=4) {
+			//int paletteNum = 7;
+			int colorNum = main.gfx.characters[calcId].getValue(j/4);
+
+
+			//pixels[j] = ROMPalettes.colors[main.palettes.palettes[paletteNum][colorNum] * 3];
+			//pixels[j + 1] = ROMPalettes.colors[main.palettes.palettes[paletteNum][colorNum] * 3 + 1];
+			//pixels[j + 2] = ROMPalettes.colors[main.palettes.palettes[paletteNum][colorNum] * 3 + 2];
+			pixels[j] = fakeColors[colorNum * 4]; //r
+			pixels[j + 1] = fakeColors[colorNum * 4 + 1]; //g
+			pixels[j + 2] = fakeColors[colorNum * 4 + 2]; //b
+			pixels[j + 3] = fakeColors[colorNum * 4 + 3]; //a
+		}
+
+		BufferedImage charTile = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
+		WritableRaster raster = charTile.getRaster();
+		raster.setPixels(0, 0, 8, 8, pixels);
+
+		int offsetX = (x * 8) - (viewX*64);
+		int offsetY = (y * 8) - (viewY*64);
+		int useWidth = 8;
+		int useHeight = 8;
+		if(flipX) {
+			offsetX += useWidth;
+			useWidth *= -1;
+		}
+		if(flipY) {
+			offsetY += useHeight;
+			useHeight *= -1;
+		}
+
+		g.drawImage(charTile, offsetX+subX, offsetY+subY, useWidth, useHeight, null);
+		objectGraphics.add(charTile);
+	}
+
+
+
 	private final boolean offMap(int x, int y) {
 		if (x < 0) return true;
 		if (y < 0) return true;
 		if (x + viewWidth > 256) return true;
 		if (y + viewHeight > 224) return true;
-		
+
 		return false;
 	}
-	
+
 	public static final Color transparent(Color c) {
 		return new Color(c.getRed(), c.getGreen(), c.getBlue(), 128);
 	} public static final Color transparent(Color c, int alpha) {
 		return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
 	}
-	
+
 	private static final boolean outOfRange(int n, int r1, int r2) {
 		return (n < r1 || n > r2);
 	}
-	
+
 }

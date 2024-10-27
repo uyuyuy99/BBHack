@@ -74,14 +74,15 @@ public class ROMPalettes {
 	private MainMenu main;
 	
 	public int[][] palettes;
-	
+
+	int mapPaletteAddr = 0x29010;
 	public ROMPalettes(MainMenu instance) {
 		main = instance;
-		palettes = new int[32 * 4][4]; //[palette][colors]
+		palettes = new int[0x20 * 4][4]; //[palette][colors]
 		
-		for (int i=0; i<128; i++) { //128 pallette entries
+		for (int i=0; i<0x80; i++) { //128 pallette entries
 			for (int j=0; j<4; j++) { //4 colors in each palette
-				palettes[i][j] = main.rom.get(167952 + (i*4) + j) % 64;
+				palettes[i][j] = main.rom.get(mapPaletteAddr + (i*4) + j) % 0x40;
 			}
 		}
 		

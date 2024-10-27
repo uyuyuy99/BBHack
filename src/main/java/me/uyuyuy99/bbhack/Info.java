@@ -322,12 +322,17 @@ public interface Info {
 			"If you find any bugs, want to request features, or want to help me<br/>" +
 			"uncover some data from the EB0 ROM, just contact me:<br/>" +
 			"PM on starmen.net (uyuyuy99)<br/>" +
-			"Making a post on the <a href='http://google.com/'>forum thread</a><br/>" +
+			"Making a post on the <a href='"+forumThread+"'>forum thread</a><br/>" +
 			"Email (uyuyuy99@gmail.com)</center><br/>" +
 			"<br/>" +
 			"<h2>Changelog</h2>" +
 			"<u>v1.0</u> (September 6, 2012)" +
-			"<ul><li>Initial release! Includes map editor and chunk editor.</li></u>" + 
-			"</u></body></html>";
-	
+			"<ul><li>Initial release! Includes map editor and chunk editor.</li></ul>" +
+			"<u>v2.0</u> (October 26, 2024)" +
+			"<ul><li>Open source! Features unreleased since the Starmen thread!</li>" +
+			"<li>WIP object editing!</li></ul>" +
+			"<u>v2.0.2</u> (October 28, 2024)" +
+			"<ul><li>Faster Load/Save times!</li>" +
+			"<li>WIP object drawing!</li></ul>" +
+			"</body></html>";
 }

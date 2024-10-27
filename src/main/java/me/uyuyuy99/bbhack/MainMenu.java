@@ -33,6 +33,8 @@ public class MainMenu extends JFrame {
 	public ROMObjects objects;
 	public ROMItems items;
 	public ROMText text;
+	public ROMSpriteDefs sprites;
+	public ROMObjects_EB objects_eb;
 	
 	private JPanel panel;
 	private GridBagLayout layout;
@@ -227,9 +229,11 @@ public class MainMenu extends JFrame {
 		gfx = new ROMGraphics(this);
 		map = new ROMMapSectors(this);
 		objects = new ROMObjects(this);
+		sprites = new ROMSpriteDefs(this);
+		objects_eb = new ROMObjects_EB(this);
 		items = new ROMItems(this);
 		text = new ROMText(this);
-		
+
 		repaintAll();
 	}
 	
