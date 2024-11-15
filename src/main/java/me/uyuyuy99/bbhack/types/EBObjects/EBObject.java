@@ -53,11 +53,12 @@ public class EBObject {
     public DIRECTION dir;
     public int x,y;
     public byte[] scriptbytes;
+    public short start_addr;
     
     //specifically type object so normal ints and bytes can be used
     public List<Object> script = new ArrayList<>();
     
-    public EBObject(byte[] myData){
+    public EBObject(byte[] myData, short myAddr){
         byte[] objectDef = Arrays.copyOf(myData, 4);
 
         int word1 = (Byte.toUnsignedInt(objectDef[1]) << 8) | Byte.toUnsignedInt(objectDef[0]);
@@ -68,9 +69,17 @@ public class EBObject {
         dir = DIRECTION.values()[word2 & 0x3F]; //bits 0-5
         y = (word2 & 0xFFC0) >> 6; //bits 6-15
         scriptbytes = Arrays.copyOfRange(myData, 4, myData.length);
+        start_addr = start_addr;
     }
     
     public EBObject(){
+    }
+
+    public int getRealX(){
+        return (x * 2) * 8;
+    }
+    public int getRealY(){
+        return ((y - 0x81) * 2) * 8;
     }
 }
 

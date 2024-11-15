@@ -21,7 +21,7 @@ public class MapEditor extends JFrame {
 	
 	private JDesktopPane desktop;
 	
-	InternalMap internalMap;
+	public InternalMap internalMap;
 	InternalChunkSelectME internalChunkSelect;
 	
 	PanelMap panelMap;

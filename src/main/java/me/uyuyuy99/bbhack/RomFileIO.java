@@ -32,7 +32,7 @@ public class RomFileIO {
 	
 	public void save() {
 		try {
-			RandomAccessFile rom = new RandomAccessFile(rompath, "w");
+			RandomAccessFile rom = new RandomAccessFile(rompath, "rw");
 			rom.write(data);
 			rom.close();
 		} catch (IOException e) {
@@ -76,7 +76,7 @@ public class RomFileIO {
 	
 	public void saveMap() {
 		try {
-			RandomAccessFile rom = new RandomAccessFile(rompath, "w");
+			RandomAccessFile rom = new RandomAccessFile(rompath, "rw");
 			
 			final int START = 0x2010;
 			final int END = 0x20010;
@@ -91,7 +91,7 @@ public class RomFileIO {
 	
 	public void saveObjects() {
 		try {
-			RandomAccessFile rom = new RandomAccessFile(rompath, "w");
+			RandomAccessFile rom = new RandomAccessFile(rompath, "rw");
 			
 			final int START = 0x20010;
 			final int END = 0x25DF6;

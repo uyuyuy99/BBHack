@@ -7,7 +7,7 @@ public interface Info {
 	public static final int CHAR_OFFSET = 0xC1 - (int) 'A';
 	
 	public static final Color COLOR_GRID1 = Color.GRAY;
-	public static final Color COLOR_GRID2 = Color.DARK_GRAY;
+	public static final Color COLOR_GRID2 = Color.GREEN;
 	public static final Color COLOR_FLASH = Color.BLUE;
 	public static final Color COLOR_OBJECT = new Color(255, 0, 255, 128);
 	public static final Color COLOR_BORDER = new Color(255, 0, 0, 128);

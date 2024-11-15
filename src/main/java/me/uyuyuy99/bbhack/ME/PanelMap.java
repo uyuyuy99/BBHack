@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowEvent;
 import java.awt.image.*;
 
 import javax.swing.*;
@@ -13,9 +14,9 @@ import javax.swing.*;
 import me.uyuyuy99.bbhack.CoordList;
 import me.uyuyuy99.bbhack.Info;
 import me.uyuyuy99.bbhack.MainMenu;
-import me.uyuyuy99.bbhack.ObjectInfo;
-import me.uyuyuy99.bbhack.rom.ROMObjects;
+import me.uyuyuy99.bbhack.OE.ObjectEditor;
 import me.uyuyuy99.bbhack.rom.ROMPalettes;
+import me.uyuyuy99.bbhack.types.EBObjects.scripts.EBDoorArg;
 import me.uyuyuy99.bbhack.types.Tile64;
 
 import me.uyuyuy99.bbhack.types.SpriteDef;
@@ -67,11 +68,15 @@ public class PanelMap extends JPanel implements Info {
 	
 	private static final long serialVersionUID = 1L;
 	private BufferedImage[][] mapGraphics;
+	//idk how to cache stuff lol
 	private List<BufferedImage> objectGraphics;
+
+	//Already drawn sprites
+	private List<EBObject> objects_onscreen = new ArrayList<>();
 	
 	//Current scroll-bar view coordinates (UNITS: 64x64 tiles)
-	int viewX = 0;
-	int viewY = 0;
+	public int viewX = 0;
+	public int viewY = 0;
 	//Dimensions of the current map view (UNITS: 64x64 tiles)
 	int viewWidth = 32;
 	int viewHeight = 32;
@@ -84,9 +89,10 @@ public class PanelMap extends JPanel implements Info {
 	public Timer chunkPreviewTimer;
 	
 	//Object you are currently moving
-	private ObjectInfo objectSelected;
+	public EBObject objectSelected;
+	//Object you are currently editing
+	public EBObject editingObject;
 	private int areaSelected;
-	private int objectNumSelected;
 	
 	//View flags
 	boolean viewGridChunk = true;
@@ -97,10 +103,9 @@ public class PanelMap extends JPanel implements Info {
 	
 	//Tutorial viewed flags
 	private boolean tutorialTilesetColors = false;
-	
-	//Already drawn sprites
-	private CoordList objectCoords;
-	
+
+	public ObjectEditor OE;
+
 	public PanelMap(MainMenu instance) {
 		main = instance;
 		
@@ -120,41 +125,38 @@ public class PanelMap extends JPanel implements Info {
 			}
 		);
 		
-		objectCoords = new CoordList();
-		
 		this.addMouseListener(
 			new MouseListener() {
 				public void mousePressed(MouseEvent event) {
-					for (int i=0; i<objectCoords.size(); i++) {
-						int x = (objectCoords.getX(i)*16) - (viewX*64);
-						int y = (objectCoords.getY(i)*16) - (viewY*64) - 8;
-						
+					for (EBObject object : objects_onscreen){
+						int x = object.getRealX() - (viewX*64);
+						int y = object.getRealY() - (viewY*64) + 8;
+
+						//check if mouseover
 						if (((event.getX() > x) && (event.getX() < x+16)) && ((event.getY() > y) && (event.getY() < y+16))) {
 							int sectorX = ((event.getX() / 64) + viewX) / 4;
 							int sectorY = ((event.getY() / 64) + viewY) / 4;
 							int area = main.map.sectorAreaGet(sectorX, sectorY);
-							
-							for (int j=0; j<ROMObjects.MAX_OBJECTS; j++) {
-								if (main.objects.objects[area][j] != null) {
-									if (main.objects.objects[area][j].getX() == objectCoords.getX(i) && main.objects.objects[area][j].getY() == objectCoords.getY(i)) {
-										objectSelected = main.objects.objects[area][j];
-										
-										areaSelected = area;
-										objectNumSelected = j;
-										
-										/*
-										System.out.println("Area: " + area);
-										System.out.println("ObjectNum: " + j);
-										System.out.println("Type: " + objectSelected.getType());
-										System.out.println("Dir: " + objectSelected.getDir());
-										System.out.println("Location: " + objectSelected.getX() + ", " + objectSelected.getY());
-										System.out.println();
-										*/
-										
-										break;
+
+							objectSelected = object;
+							areaSelected = area;
+
+							switch (event.getButton()){
+								case MouseEvent.BUTTON1: //Lclick
+									System.out.println("Area: " + area);
+									System.out.println("Location: " + objectSelected.x + ", " + objectSelected.y);
+									System.out.println();
+									break;
+								case MouseEvent.BUTTON3: //Rclick
+									if (OE != null){
+										OE.dispatchEvent(new WindowEvent(OE, WindowEvent.WINDOW_CLOSING));
 									}
-								}
+									editingObject = objectSelected;
+									OE = new ObjectEditor(PanelMap.this, main);
+									OE.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+									break;
 							}
+							break;
 						}
 					}
 				}
@@ -163,7 +165,8 @@ public class PanelMap extends JPanel implements Info {
 					objectSelected = null;
 					repaint();
 				}
-				
+
+				//idk about that mane tom and jerry eat the cheese
 				public void mouseEntered(MouseEvent event) {
 					//Mice
 				}
@@ -178,42 +181,66 @@ public class PanelMap extends JPanel implements Info {
 		
 		this.addMouseMotionListener(
 			new MouseMotionListener() {
+				//move object
 				public void mouseDragged(MouseEvent event) {
 					if (objectSelected != null) {
-						int x1 = objectSelected.getX();
-						int y1 = objectSelected.getY();
+						int x1 = objectSelected.x;
+						int y1 = objectSelected.y-0x80;
 						int x2 = (viewX * 4) + (event.getX() / 16);
 						int y2 = (viewY * 4) + ((event.getY() + 8) / 16);
 						
 						int area = main.map.sectorAreaGet(x2 / 16, y2 / 16);
 						
-						// --- Check for area change + change area if needed --- //
+						// --- Check for area change + change area if needed ---
 						
 						if (x1 != x2 || y1 != y2) {
 							if (area != areaSelected) {
-								if (main.objects.addObject(objectSelected, area)) {
-									main.objects.removeObject(areaSelected, objectNumSelected);
-									objectSelected.setX(x2);
-									objectSelected.setY(y2);
-								} else {
-									//User can't move to filled area
+								boolean removed = false;
+								boolean added = false;
+								for(int b = 0; b < main.objects_eb.Banks.size(); b++){
+									for(int a = 0; a < main.objects_eb.Banks.get(b).size(); a++){
+										List<EBObject> areaData = main.objects_eb.Banks.get(b).get(a);
+										if (!removed){
+											if (areaData.contains(objectSelected)){
+												areaData.remove(objectSelected);
+												removed = true;
+											}
+										}
+										if (!added){
+											//toplayer all the banks to get the actual area index
+											int atArea = a;
+											for(int b2 = 0; b2 < b; b2++){
+												atArea += main.objects_eb.Banks.get(b2).size();
+											}
+											if (atArea == area){
+												areaData.add(objectSelected);
+												added = true;
+											}
+										}
+										if (added && removed) {
+											break;
+										}
+									}
 								}
-							} else {
-								objectSelected.setX(x2);
-								objectSelected.setY(y2);
 							}
-							
+
+							objectSelected.x = x2;
+							objectSelected.y = y2+0x80;
+							if(OE != null){
+								OE.objUpdate();
+							}
 							repaint();
 						}
 					}
 				}
-				
+
+				//change cursor over selectable object
 				public void mouseMoved(MouseEvent event) {
 					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					
-					for (int i=0; i<objectCoords.size(); i++) {
-						int x = (objectCoords.getX(i)*16) - (viewX*64);
-						int y = (objectCoords.getY(i)*16) - (viewY*64) - 8;
+
+					for (EBObject object : objects_onscreen){
+						int x = object.getRealX() - (viewX*64);
+						int y = object.getRealY() - (viewY*64) + 8;
 						
 						if (((event.getX() > x) && (event.getX() < x+16)) && ((event.getY() > y) && (event.getY() < y+16))) {
 							setCursor(new Cursor(Cursor.MOVE_CURSOR));
@@ -328,7 +355,7 @@ public class PanelMap extends JPanel implements Info {
 		int curX = 0;
 		int curY = 0;
 		
-		objectCoords.clear();
+		objects_onscreen.clear();
 		
 		CoordList tilesetBorders = new CoordList();
 		
@@ -381,22 +408,6 @@ public class PanelMap extends JPanel implements Info {
 			g.drawImage(tile, curX * 64, curY * 64, null); //Draw dat image yo
 			tempGraphics[curX][curY] = tile; //Cache images already drawn
 			
-			//Load object positions
-			for (int j=0; j<ROMObjects.MAX_OBJECTS; j++) {
-				if (main.objects.objects[area][j] != null) {
-					int type = main.objects.objects[area][j].getType();
-					int dir = main.objects.objects[area][j].getDir();
-					int x = main.objects.objects[area][j].getX();
-					int y = main.objects.objects[area][j].getY();
-					
-					if (((x > viewX*4) && (x < (viewX*4) + (viewWidth*4))) && ((y > viewY*4) && (y < (viewY*4) + (viewHeight*4)))) {
-						if (!objectCoords.contains(x, y)) {
-							objectCoords.add(x, y);
-						}
-					}
-				}
-			}
-			
 			//Draw grid(s)
 			g.setColor(COLOR_GRID1);
 			if (viewGridChunk) {
@@ -415,12 +426,13 @@ public class PanelMap extends JPanel implements Info {
 			}
 			
 			//Fade out chunks which user cannot move object to
-			if (objectSelected != null) {
+			//reimplement this when size calculation is configured
+			/*if (objectSelected != null) {
 				if (area != areaSelected && !main.objects.isRoom(objectSelected, area)) {
 					g.setColor(COLOR_FADED);
 					g.fillRect(curX * 64, curY * 64, 64, 64);
 				}
-			}
+			}*/
 			
 			//Flashing red effect on similar chunks when chunk is selected
 			if (chunkPreviewAlpha >= 0) {
@@ -523,51 +535,35 @@ public class PanelMap extends JPanel implements Info {
 		}
 		
 		if (viewObjects) {
-			g.setColor(transparent(COLOR_OBJECT));
-			for (int i=0; i<objectCoords.size(); i++) {
-				int x = objectCoords.getX(i);
-				int y = objectCoords.getY(i);
-				g.fillRect((x*16) - (viewX*64), (y*16) - (viewY*64) - 8, 16, 16);
-			}
-		}
-		
-		if (viewTilesetWarnings) {
-			g.setColor(transparent(COLOR_BORDER, 160));
-			for (int i=0; i<tilesetBorders.size(); i++) {
-				int x = tilesetBorders.getX(i);
-				int y = tilesetBorders.getY(i);
-				g.fillRect(x * 64, y * 64, 64, 64);
-			}
-		}
-		
-		if (chunkPreviewAlpha >= 0)
-			chunkPreviewAlpha -= 0.1; //Flash effect animation
-		
-		mapGraphics = tempGraphics; //After done drawing, reset cache
-		
-		//System.out.println("LAG: " + (System.currentTimeMillis() - before) + "ms");
+			//debug old
 
-
-
-
-
-		objectGraphics = new ArrayList<>();
-		if(true){
+			//draw the actual sprite itself
+			objectGraphics = new ArrayList<>();
 			for (List<List<EBObject>> bank : main.objects_eb.Banks) {
 				for (List<EBObject> area_bank : bank) {
 					for (EBObject object : area_bank){
 						int fixObjX = object.x*2;
 						int fixObjY = (object.y-0x81)*2;
-						int offsetX = (fixObjX * 8);
-						int offsetY = (fixObjY * 8);
+						int offsetX = (fixObjX * 8); //real x
+						int offsetY = (fixObjY * 8); //real y
 						int viewXFix = viewX * 64;
 						int viewYFix = viewY * 64;
 						int viewWidthFix = viewWidth * 64;
 						int viewHeightFix = viewHeight * 64;
-						if(offsetX < viewXFix || offsetX > viewXFix+viewWidthFix){continue;}
-						if(offsetY < viewYFix || offsetY > viewYFix+viewHeightFix){continue;}
+						//if outside draw range, dont bother
+						//extra margin included for thnigs partially offscreen
+						int extraMarginX = 32;
+						int extraMarginY = 32;
+						if(offsetX < viewXFix-extraMarginX || offsetX > viewXFix+viewWidthFix+extraMarginX){continue;}
+						if(offsetY < viewYFix-extraMarginY || offsetY > viewYFix+viewHeightFix+extraMarginY){continue;}
+
 						offsetX -= viewXFix;
 						offsetY -= viewYFix-8;
+
+						g.setColor(transparent(COLOR_OBJECT));
+						g.fillRect(offsetX, offsetY, 16, 16);
+
+						objects_onscreen.add(object);
 
 						if(object instanceof EBNPC){
 							SpriteDef def = ((EBNPC) object).mysprite;
@@ -576,11 +572,11 @@ public class PanelMap extends JPanel implements Info {
 								int sectorX = object.x / 16;
 								int sectorY = (object.y - 0x80) / 16;
 								int myarea = main.map.sectorAreaGet(sectorX, sectorY);
-								if(calcId >= 0x80){
+								if(calcId >= 0x80){ //lower half? nuh uh!
 									calcId -= 0x80;
 								}
 								else {
-									myarea=0;
+									myarea = 0;
 								}
 								drawSpriteDef(g, def, calcId, myarea, fixObjX, fixObjY, 2, 2);
 							}
@@ -604,36 +600,62 @@ public class PanelMap extends JPanel implements Info {
 				}
 			}
 
+			if(editingObject != null){
+				for(Object exec : editingObject.script){
+					//draw teleport lines
+					if (exec instanceof EBDoorArg) {
+						EBDoorArg the = (EBDoorArg) exec;
+						int realX1 = editingObject.getRealX() - (viewX * 64);
+						int realY1 = editingObject.getRealY() - ((viewY * 64) - 8);
+						int realX2 = ((the.targetX * 2) * 8) - (viewX * 64);
+						int realY2 = (((the.targetY - 0x81) * 2) * 8) - ((viewY * 64) - 8);
+						g.setColor(Color.RED);
+						g.drawLine(realX1 + 8, realY1 + 8, realX2 + 8, realY2 + 8);
+						g.fillOval(realX2 + 4, realY2 + 8, 8, 8);
+					}
+				}
+			}
+
 		}
-		//int fucker = 0;
-		//drawSpriteDef(g, fucker, main.sprites.Definitions[fucker].offset, 0, 0, 0, 2, 2);
+
+		if (viewTilesetWarnings) {
+			g.setColor(transparent(COLOR_BORDER, 160));
+			for (int i=0; i<tilesetBorders.size(); i++) {
+				int x = tilesetBorders.getX(i);
+				int y = tilesetBorders.getY(i);
+				g.fillRect(x * 64, y * 64, 64, 64);
+			}
+		}
+
+		if (chunkPreviewAlpha >= 0)
+			chunkPreviewAlpha -= 0.1; //Flash effect animation
+
+		mapGraphics = tempGraphics; //After done drawing, reset cache
+
+		//System.out.println("LAG: " + (System.currentTimeMillis() - before) + "ms");
+
+
 	}
 
 	//width + height is kinda tacky. pls find some other way to calc sprites
 	public void drawSpriteDef(Graphics g, int i, int offset, int area, int x, int y, int width, int height){
 		if(main.sprites.Definitions[i].spriteStart == -1) return;
 		for (int z = 0; z < width * height; z++){
-			Sprite hi = main.sprites.Sprites[main.sprites.Definitions[i].spriteStart+z];
-			drawCharTile(g, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
+			SpriteDef hi2 = main.sprites.Definitions[i];
+			Sprite hi = main.sprites.Sprites[hi2.spriteStart+z];
+			drawCharTile(g, hi2, hi, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
 		}
 	}
 	public void drawSpriteDef(Graphics g, SpriteDef Definition, int offset, int area, int x, int y, int width, int height){
 		if(Definition.spriteStart == -1) return;
 		for (int z = 0; z < width * height; z++){
 			Sprite hi = main.sprites.Sprites[Definition.spriteStart+z];
-			drawCharTile(g, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
+			drawCharTile(g, Definition, hi, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
 		}
 	}
 
-	//dummy palette
-	int[] fakeColors = {
-			0,0,0,0,
-			0,0,0,255,
-			181,50,32,255,
-			247,217,166,255
-	};
 	//function to draw  a character tile from the spritedefs
-	public void drawCharTile(Graphics g, int id, int area, int x, int y, int subX, int subY, boolean flipX, boolean flipY){
+	public void drawCharTile(Graphics g, SpriteDef Definition, Sprite sprite, int id, int area, int x, int y, int subX, int subY, boolean flipX, boolean flipY){
 
 		//draw char stuff
 
@@ -652,20 +674,24 @@ public class PanelMap extends JPanel implements Info {
 			calcId = calcId;
 		}
 
-		//x*y*rgb
+		//x*y*rgba
 		int[] pixels = new int[8*8*4];
 		for (int j = 0; j < pixels.length; j+=4) {
-			//int paletteNum = 7;
+			int[] parr = new int[]{Definition.p1, Definition.p2};
+			int[] paletteNum = main.palettes.sprite_palettes[parr[sprite.palette]];
 			int colorNum = main.gfx.characters[calcId].getValue(j/4);
 
-
-			//pixels[j] = ROMPalettes.colors[main.palettes.palettes[paletteNum][colorNum] * 3];
-			//pixels[j + 1] = ROMPalettes.colors[main.palettes.palettes[paletteNum][colorNum] * 3 + 1];
-			//pixels[j + 2] = ROMPalettes.colors[main.palettes.palettes[paletteNum][colorNum] * 3 + 2];
-			pixels[j] = fakeColors[colorNum * 4]; //r
-			pixels[j + 1] = fakeColors[colorNum * 4 + 1]; //g
-			pixels[j + 2] = fakeColors[colorNum * 4 + 2]; //b
-			pixels[j + 3] = fakeColors[colorNum * 4 + 3]; //a
+			for(int k = 0; k < 4; k++) {
+				if (colorNum != 0) {
+					if (k == 3) {
+						pixels[j + k] = 255;
+					} else {
+						pixels[j + k] = ROMPalettes.colors[paletteNum[colorNum] * 3 + k];
+					}
+				}else{
+					pixels[j + k] = 0;
+				}
+			}
 		}
 
 		BufferedImage charTile = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);

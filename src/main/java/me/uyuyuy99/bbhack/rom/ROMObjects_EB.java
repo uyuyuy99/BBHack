@@ -2,17 +2,15 @@ package me.uyuyuy99.bbhack.rom;
 
 import me.uyuyuy99.bbhack.MainMenu;
 import me.uyuyuy99.bbhack.types.EBObjects.*;
-import me.uyuyuy99.bbhack.types.SpriteDef;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 
 
 public class ROMObjects_EB
 {
 	private MainMenu main;
-	int[] main_banks_start = {0x20010, 0x22010};
-	int[] main_banks_end = {0x20010+0x1FE3, 0x22010+0x1EAB};
+	int[] main_banks_start = {0x20010, 0x22010, 0x24010};
+	int[] main_banks_end = {0x20010+0x1FE3, 0x22010+0x1EAB, 0x24010+0x1f76};
 	//wow! thats a lot of lists
 	public List<List<List<EBObject>>> Banks = new ArrayList<>();
 
@@ -76,30 +74,30 @@ public class ROMObjects_EB
 				List<EBObject> parsedData = new ArrayList<>();
 				for(int o = 0; o < objectData.size(); o++){
 					byte[] myData = objectData.get(o);
-					EBObject newObject = new EBObject(myData);
+					EBObject newObject = new EBObject(myData, (short) (i + 0x8000));
 					switch(newObject.type){
 						case DOOR:
-							parsedData.add(new EBDoor(newObject));
+							parsedData.add(new EBDoor(newObject, (short) (i + 0x8000)));
 							break;
 						case FLAGSET_SEE:
-							parsedData.add(new EBFlagSet(newObject));
+							parsedData.add(new EBFlagSet(newObject, (short) (i + 0x8000)));
 							break;
 						case STATIONARY_NPC2:
 						case WANDERING_NPC2:
 						case WANDERINGFAST_NPC:
 						case SPINNING_NPC:
 						case WANDERING_NPC:
-							EBNPC npc = new EBNPC(newObject);
+							EBNPC npc = new EBNPC(newObject, (short) (i + 0x8000));
 							npc.DoSpriteStuff(main.sprites.Definitions);
 							parsedData.add(npc);
 							break;
 						case TRIGGER:
-							parsedData.add(new EBProgrammable(newObject));
+							parsedData.add(new EBProgrammable(newObject, (short) (i + 0x8000)));
 							break;
 						default:
 							switch(newObject.type_int){
 								case 0x14:
-									npc = new EBNPC(newObject);
+									npc = new EBNPC(newObject, (short) (i + 0x8000));
 									npc.DoSpriteStuff(main.sprites.Definitions);
 									parsedData.add(npc);
 									break;
@@ -115,16 +113,6 @@ public class ROMObjects_EB
 				Banks.get(mp).add(parsedData);
 
 			}
-			break;
-
-
 		}
-
-
-
-
 	}
-
 }
-
-

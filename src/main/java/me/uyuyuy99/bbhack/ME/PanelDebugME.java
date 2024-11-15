@@ -20,9 +20,11 @@ public class PanelDebugME extends JPanel {
 	private MapEditor ME;
 	
 	private FlowLayout layout;
-	
+
 	JLabel xLabel;
 	JLabel yLabel;
+	JLabel chunkxLabel;
+	JLabel chunkyLabel;
 	JLabel areaLabel;
 	
 	private String b1 = "<html><b>";
@@ -37,27 +39,39 @@ public class PanelDebugME extends JPanel {
 		setLayout(layout);
 		
 		setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0, 0, 0, 50)));
-		
+
 		xLabel = new JLabel();
 		yLabel = new JLabel();
+		chunkxLabel = new JLabel();
+		chunkyLabel = new JLabel();
 		areaLabel = new JLabel();
-		
+
 		add(xLabel);
 		add(yLabel);
+		add(chunkxLabel);
+		add(chunkyLabel);
 		add(areaLabel);
 		
 		ME.panelMap.addMouseMotionListener(new MouseMotionListener() {
 			public void mouseMoved(MouseEvent event) {
 				int x = (event.getX() / 16) + (ME.panelMap.viewX * 4);
 				int y = (event.getY() / 16) + (ME.panelMap.viewY * 4);
-				
-				xLabel.setText(b1 + "x:" + b2 + x + b3);
-				yLabel.setText(b1 + "y:" + b2 + y + b3);
-				areaLabel.setText(b1 + "Area:" + b2 + main.map.sectorAreaGet(x / 16, y / 16) + b3);
+				PanelDebugME.this.UpdateLabels(x, y);
+
 			}
 			public void mouseDragged(MouseEvent event) {
 				// yeah
 			}
 		});
+
 	}
+
+	public void UpdateLabels(int mX, int mY){
+		xLabel.setText(b1 + "x:" + b2 + mX + b3);
+		yLabel.setText(b1 + "y:" + b2 + mY + b3);
+		chunkxLabel.setText(b1 + "chunk x:" + b2 + (mX / 4) + b3);
+		chunkyLabel.setText(b1 + "chunk y:" + b2 + (mY / 4) + b3);
+		areaLabel.setText(b1 + "Area:" + b2 + main.map.sectorAreaGet(mX / 16, mY / 16) + b3);
+	}
+
 }

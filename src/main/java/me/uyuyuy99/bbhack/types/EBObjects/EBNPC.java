@@ -12,7 +12,14 @@ public class EBNPC extends EBProgrammable{
         myspritePointer = (short) ((Byte.toUnsignedInt(original.scriptbytes[1]) << 8) | Byte.toUnsignedInt(original.scriptbytes[0]));
         //shave off the first two since its a sprite def
         scriptbytes = Arrays.copyOfRange(original.scriptbytes, 2, original.scriptbytes.length);
-        ParseScript(scriptbytes);
+        ParseScript(scriptbytes, (short) 6);
+    }
+    public EBNPC(EBObject original, short myaddr){
+        super(original, myaddr, true);
+        myspritePointer = (short) ((Byte.toUnsignedInt(original.scriptbytes[1]) << 8) | Byte.toUnsignedInt(original.scriptbytes[0]));
+        //shave off the first two since its a sprite def
+        scriptbytes = Arrays.copyOfRange(original.scriptbytes, 2, original.scriptbytes.length);
+        ParseScript(scriptbytes, (short) 6);
     }
     
     public void DoSpriteStuff(SpriteDef[] Defs){

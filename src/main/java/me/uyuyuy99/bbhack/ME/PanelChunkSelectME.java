@@ -52,6 +52,9 @@ public class PanelChunkSelectME extends JPanel {
 		panelMap.addMouseListener(
 			new MouseListener() {
 				public void mousePressed(MouseEvent event) {
+					//if selecting object, ignore
+					if (panelMap.objectSelected != null){return;}
+
 					if (event.getButton() == MouseEvent.BUTTON3) { //Right click to select tile from map
 						selectX = (event.getX() / 64) + panelMap.viewX;
 						selectY = (event.getY() / 64) + panelMap.viewY;

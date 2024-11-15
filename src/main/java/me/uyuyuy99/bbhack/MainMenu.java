@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -20,6 +21,11 @@ import me.uyuyuy99.bbhack.rom.*;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Arrays;
 
 public class MainMenu extends JFrame {
 	
@@ -40,10 +46,10 @@ public class MainMenu extends JFrame {
 	private GridBagLayout layout;
 	private GridBagConstraints c;
 	
-//	private EnemyGroupEditor EGE;
-	private MapEditor ME;
-	private ChunkEditor CE;
-	private ScriptEditor SE;
+//	public EnemyGroupEditor EGE;
+	public MapEditor ME;
+	public ChunkEditor CE;
+	public ScriptEditor SE;
 	
 //	private JButton buttonEnemyGroups;
 	private JButton buttonMap;
@@ -236,6 +242,29 @@ public class MainMenu extends JFrame {
 
 		repaintAll();
 	}
+
+	private void loadPaletteFile(File path){
+		try {
+			RandomAccessFile paletteFileData = new RandomAccessFile(path, "r");
+			if((int) paletteFileData.length() != 0xC0){
+				String whatfilemsg = "What kinda file is this???\n" +
+						"I was expecting an emulator palette file!\n" +
+						"(0xC0 in length!)";
+				JOptionPane.showMessageDialog(panel, whatfilemsg, "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			byte[] palData = new byte[(int) paletteFileData.length()];
+			paletteFileData.readFully(palData);
+			paletteFileData.close();
+			ROMPalettes.colors = new int[palData.length];
+			for(int i = 0; i < palData.length; i++){
+				ROMPalettes.colors[i] = Byte.toUnsignedInt(palData[i]);
+			}
+			repaintAll();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public void repaintAll() {
 		if (ME != null) {
@@ -313,9 +342,10 @@ public class MainMenu extends JFrame {
 		
 		return string;
 	}
-	
+
 	private class MenuBar extends JMenuBar {
-		
+
+
 		private static final long serialVersionUID = 1L;
 		
 		public MenuBar() {
@@ -337,6 +367,27 @@ public class MainMenu extends JFrame {
 					}
 				}
 			);
+
+			JMenuItem palLoad = new JMenuItem("Load Palette");
+			menuFile.add(palLoad);
+			palLoad.addActionListener(
+					new ActionListener() {
+						public void actionPerformed(ActionEvent event) {
+							final JFileChooser fileChooser = new JFileChooser();
+							int returnVal = fileChooser.showOpenDialog(MainMenu.this);
+
+							if (rom.rompath == null) { //Don't open if no ROM is loaded
+								JOptionPane.showMessageDialog(panel, "You need to load a ROM first, silly.", "Error", JOptionPane.ERROR_MESSAGE);
+								return;
+							}
+							if (returnVal == JFileChooser.APPROVE_OPTION) {
+								loadPaletteFile(fileChooser.getSelectedFile());
+							}
+						}
+					}
+			);
+
+
 			JMenuItem itemExit = new JMenuItem("Exit");
 			menuFile.add(itemExit);
 			itemExit.addActionListener(

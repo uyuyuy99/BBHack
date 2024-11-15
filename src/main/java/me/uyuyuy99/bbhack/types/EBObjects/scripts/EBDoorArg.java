@@ -2,6 +2,7 @@ package me.uyuyuy99.bbhack.types.EBObjects.scripts;
 import me.uyuyuy99.bbhack.types.EBObjects.EBObject.DIRECTION;
 
 public class EBDoorArg extends EBScript{
+
     public int music,targetX,targetY;
     public DIRECTION targetDir;
     public EBDoorArg(byte[] arguments){
@@ -11,6 +12,10 @@ public class EBDoorArg extends EBScript{
         targetX = (word1 & 0xFFC0) >> 6; //bits 6-15
         targetDir = DIRECTION.values()[word2 & 0x3F]; //bits 0-5
         targetY = (word2 & 0xFFC0) >> 6; //bits 6-15
+        script_name = "DoorArg";
+        script_description =
+                "Script to move the player on touch." +
+                 "Also used to teleport the player on non-door objects.";
     }
 
 }
