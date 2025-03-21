@@ -30,7 +30,7 @@ public class PanelMap extends JPanel implements Info {
 
 	private MainMenu main;
 	private PanelChunkSelectME panelChunkSelect;
-	
+
 	private static final int[] sectorColors = new int[] {
 		0xE3, 0x26, 0x36,
 		0xC4, 0x62, 0x10,
@@ -65,7 +65,7 @@ public class PanelMap extends JPanel implements Info {
 		0x00, 0xA6, 0x93,
 		0x69, 0x69, 0x69
 	};
-	
+
 	private static final long serialVersionUID = 1L;
 	private BufferedImage[][] mapGraphics;
 	//idk how to cache stuff lol
@@ -73,7 +73,7 @@ public class PanelMap extends JPanel implements Info {
 
 	//Already drawn sprites
 	private List<EBObject> objects_onscreen = new ArrayList<>();
-	
+
 	//Current scroll-bar view coordinates (UNITS: 64x64 tiles)
 	public int viewX = 0;
 	public int viewY = 0;
@@ -83,24 +83,24 @@ public class PanelMap extends JPanel implements Info {
 	//The last positions of the scroll bars
 	public int scrollHLast = 0;
 	public int scrollVLast = 0;
-	
+
 	//Used for the flashing red effect on similar chunks when chunk is selected
 	public float chunkPreviewAlpha;
 	public Timer chunkPreviewTimer;
-	
+
 	//Object you are currently moving
 	public EBObject objectSelected;
 	//Object you are currently editing
 	public EBObject editingObject;
 	private int areaSelected;
-	
+
 	//View flags
 	boolean viewGridChunk = true;
 	boolean viewGridSector = false;
 	boolean viewTilesetWarnings = true;
 	boolean viewTilesetColors = false;
 	boolean viewObjects = true;
-	
+
 	//Tutorial viewed flags
 	private boolean tutorialTilesetColors = false;
 
@@ -108,12 +108,12 @@ public class PanelMap extends JPanel implements Info {
 
 	public PanelMap(MainMenu instance) {
 		main = instance;
-		
+
 		setLayout(new BorderLayout());
-		
+
 		//Allocate enough space in graphics caching array for the entire screen
 		mapGraphics = new BufferedImage[48][48];
-		
+
 		chunkPreviewAlpha = -0.1F;
 		chunkPreviewTimer = new Timer(40,
 			new ActionListener() {
@@ -124,7 +124,7 @@ public class PanelMap extends JPanel implements Info {
 				}
 			}
 		);
-		
+
 		this.addMouseListener(
 			new MouseListener() {
 				public void mousePressed(MouseEvent event) {
@@ -160,7 +160,7 @@ public class PanelMap extends JPanel implements Info {
 						}
 					}
 				}
-				
+
 				public void mouseReleased(MouseEvent event) {
 					objectSelected = null;
 					repaint();
@@ -178,7 +178,7 @@ public class PanelMap extends JPanel implements Info {
 				}
 			}
 		);
-		
+
 		this.addMouseMotionListener(
 			new MouseMotionListener() {
 				//move object
@@ -188,11 +188,11 @@ public class PanelMap extends JPanel implements Info {
 						int y1 = objectSelected.y-0x80;
 						int x2 = (viewX * 4) + (event.getX() / 16);
 						int y2 = (viewY * 4) + ((event.getY() + 8) / 16);
-						
+
 						int area = main.map.sectorAreaGet(x2 / 16, y2 / 16);
-						
+
 						// --- Check for area change + change area if needed ---
-						
+
 						if (x1 != x2 || y1 != y2) {
 							if (area != areaSelected) {
 								boolean removed = false;
@@ -241,7 +241,7 @@ public class PanelMap extends JPanel implements Info {
 					for (EBObject object : objects_onscreen){
 						int x = object.getRealX() - (viewX*64);
 						int y = object.getRealY() - (viewY*64) + 8;
-						
+
 						if (((event.getX() > x) && (event.getX() < x+16)) && ((event.getY() > y) && (event.getY() < y+16))) {
 							setCursor(new Cursor(Cursor.MOVE_CURSOR));
 						}
@@ -254,7 +254,7 @@ public class PanelMap extends JPanel implements Info {
 	public void setPanelChunkSelect(PanelChunkSelectME panel) {
 		panelChunkSelect = panel;
 	}
-	
+
 	public void scroll(int scrollH, int scrollV) {
 		if (scrollH != scrollHLast || scrollV != scrollVLast) {
 			//Graphics caching thingymaboobers
@@ -265,7 +265,7 @@ public class PanelMap extends JPanel implements Info {
 						int newIndex = x - diff;
 						if (newIndex < 0) continue; //Don't go past array bounds!
 						if (x >= viewWidth || y >= viewHeight) mapGraphics[x][y] = null;
-						
+
 						mapGraphics[newIndex][y] = mapGraphics[x][y];
 					}
 				}
@@ -282,7 +282,7 @@ public class PanelMap extends JPanel implements Info {
 						int newIndex = x + diff;
 						if (newIndex >= 48) continue; //Don't go past array bounds!
 						if (x >= viewWidth || y >= viewHeight) mapGraphics[x][y] = null;
-						
+
 						mapGraphics[newIndex][y] = mapGraphics[x][y];
 					}
 				}
@@ -293,7 +293,7 @@ public class PanelMap extends JPanel implements Info {
 						int newIndex = y - diff;
 						if (newIndex < 0) continue; //Don't go past array bounds!
 						if (x >= viewWidth || y >= viewHeight) mapGraphics[x][y] = null;
-						
+
 						mapGraphics[x][newIndex] = mapGraphics[x][y];
 					}
 				}
@@ -310,27 +310,27 @@ public class PanelMap extends JPanel implements Info {
 						int newIndex = y + diff;
 						if (newIndex >= 48) continue; //Don't go past array bounds!
 						if (x >= viewWidth || y >= viewHeight) mapGraphics[x][y] = null;
-						
+
 						mapGraphics[x][newIndex] = mapGraphics[x][y];
 					}
 				}
 			}
-			
+
 			//Reset last scroll variables, deal with scrolling offscreen
 			if (scrollH > (256 - viewWidth)) scrollH = (256 - viewWidth);
 			if (scrollV > (224 - viewHeight)) scrollV = (224 - viewHeight);
-			
+
 			scrollHLast = scrollH;
 			scrollVLast = scrollV;
-			
+
 			//Change view variables accordingly, redraw everything
 			viewX = scrollH;
 			viewY = scrollV;
-			
+
 			repaint();
 		}
 	}
-	
+
 	public void clearGraphicsCache() {
 		for (int i=0; i<48; i++) {
 			for (int j=0; j<48; j++) {
@@ -338,64 +338,64 @@ public class PanelMap extends JPanel implements Info {
 			}
 		}
 	}
-	
+
 	public void refreshChunk(int x, int y) {
 		mapGraphics[x][y] = null;
 	}
-	
+
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
+
 		BufferedImage[][] tempGraphics = new BufferedImage[48][48];
-		
+
 		viewWidth = (getWidth() / 64) + 1;
 		viewHeight = (getHeight() / 64) + 1;
-		
+
 		int curX = 0;
 		int curY = 0;
-		
+
 		objects_onscreen.clear();
-		
+
 		CoordList tilesetBorders = new CoordList();
-		
+
 		//long before = System.currentTimeMillis();
 		for (int i=0; i<(viewWidth*viewHeight); i++) {
 			BufferedImage tile;
-			
+
 			final int mapX = viewX + curX;
 			final int mapY = viewY + curY;
 			final int sectorX = (viewX + curX) / 4;
 			final int sectorY = (viewY + curY) / 4;
 			final int area = main.map.sectorAreaGet(sectorX, sectorY);
-			
+
 			if (mapGraphics[curX][curY] == null) {
 				int[] pixels = new int[4096 * 3]; //3 values for each color
-				
+
 				boolean secondTileset = main.map.mapTilesetGet(mapX, mapY);
-				
+
 				Tile64 curTile;
 				if (!secondTileset) {
-					curTile = main.gfx.graphics64[(main.map.sectorTileset1Get(sectorX, sectorY) * 64) + main.map.mapTilesGet(mapX, mapY)].getCopy();
+					curTile = main.gfx.graphics64.get((main.map.sectorTileset1Get(sectorX, sectorY) * 64) + main.map.mapTilesGet(mapX, mapY)).getCopy();
 					for (int index : curTile.altTileset) {
-						curTile.setTile(index, main.gfx.graphics16[(main.map.sectorTileset2Get(sectorX, sectorY) * 128) + curTile.tileNums[index]]);
+						curTile.setTile(index, main.gfx.graphics16.get((main.map.sectorTileset2Get(sectorX, sectorY) * 128) + curTile.tileNums[index]));
 					}
 				} else {
-					curTile = main.gfx.graphics64[(main.map.sectorTileset2Get(sectorX, sectorY) * 64) + main.map.mapTilesGet(mapX, mapY)].getCopy();
+					curTile = main.gfx.graphics64.get((main.map.sectorTileset2Get(sectorX, sectorY) * 64) + main.map.mapTilesGet(mapX, mapY)).getCopy();
 					for (int index : curTile.altTileset) {
-						curTile.setTile(index, main.gfx.graphics16[(main.map.sectorTileset1Get(sectorX, sectorY) * 128) + curTile.tileNums[index]]);
+						curTile.setTile(index, main.gfx.graphics16.get((main.map.sectorTileset1Get(sectorX, sectorY) * 128) + curTile.tileNums[index]));
 					}
 				}
-				
+
 				for (int j=0; j<pixels.length; j+=3) {
 					int paletteNum = (main.map.sectorPaletteGet(sectorX, sectorY) * 4) + curTile.getPalette((((j/3) % 64) / 16), ((j/3) / 1024));
 					int colorNum = curTile.getValue(j/3);
-					
+
 					pixels[j] = ROMPalettes.colors[(main.palettes.palettes[paletteNum][colorNum] * 3)];
 					pixels[j+1] = ROMPalettes.colors[(main.palettes.palettes[paletteNum][colorNum] * 3) + 1];
 					pixels[j+2] = ROMPalettes.colors[(main.palettes.palettes[paletteNum][colorNum] * 3) + 2];
 				}
-				
+
 				//Image creation
 				tile = new BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB);
 				WritableRaster raster = tile.getRaster();
@@ -404,10 +404,10 @@ public class PanelMap extends JPanel implements Info {
 			else {
 				tile = mapGraphics[curX][curY];
 			}
-			
+
 			g.drawImage(tile, curX * 64, curY * 64, null); //Draw dat image yo
 			tempGraphics[curX][curY] = tile; //Cache images already drawn
-			
+
 			//Draw grid(s)
 			g.setColor(COLOR_GRID1);
 			if (viewGridChunk) {
@@ -424,7 +424,7 @@ public class PanelMap extends JPanel implements Info {
 					g.drawLine((curX * 64), (curY * 64) + 63, (curX * 64) + 63, (curY * 64) + 63);
 				}
 			}
-			
+
 			//Fade out chunks which user cannot move object to
 			//reimplement this when size calculation is configured
 			/*if (objectSelected != null) {
@@ -433,7 +433,7 @@ public class PanelMap extends JPanel implements Info {
 					g.fillRect(curX * 64, curY * 64, 64, 64);
 				}
 			}*/
-			
+
 			//Flashing red effect on similar chunks when chunk is selected
 			if (chunkPreviewAlpha >= 0) {
 				int selected = panelChunkSelect.chunkSelected;
@@ -455,20 +455,20 @@ public class PanelMap extends JPanel implements Info {
 					}
 				}
 			}
-			
+
 			// --- SECTOR COLORS TESTING --- //
 			//float alpha = 0.6F;
 			//int colorIndex = main.map.sectorTileset2Get(sectorX, sectorY);
 			//g.setColor(new Color(sectorColors[colorIndex*3], sectorColors[colorIndex*3 + 1], sectorColors[colorIndex*3 + 2], alpha));
 			//g.fillRect((curX * 64), (curY * 64), 64, 64);
-			
+
 			curX++;
 			if ((curX+1) > viewWidth) {
 				curX = 0;
 				curY++;
 			}
 		}
-		
+
 		//Draw tileset triangle colors + load bad tileset border coords
 		for (curX=-4; curX<viewWidth; curX++) {
 			for (curY=-4; curY<viewHeight; curY++) {
@@ -477,38 +477,38 @@ public class PanelMap extends JPanel implements Info {
 				final int mapY = viewY + curY;
 				final int sectorX = (viewX + curX) / 4;
 				final int sectorY = (viewY + curY) / 4;
-				
+
 				if (offMap(mapX, mapY)) continue;
-				
+
 				//Tileset conflict borders
 				if (mapX % 4 == 0 && mapY % 4 == 0) {
 					final int t1 = main.map.sectorTileset1Get(sectorX, sectorY);
 					final int t2 = main.map.sectorTileset2Get(sectorX, sectorY);
-					
+
 					if (viewTilesetColors) {
 						//Triangle for tileset 1
 						int[] xPoints = new int[] { (curX * 64) + 32, (curX * 64) + 224, (curX * 64) + 32 };
 						int[] yPoints = new int[] { (curY * 64) + 32, (curY * 64) + 32, (curY * 64) + 224 };
 						g.setColor(new Color(sectorColors[t1*3], sectorColors[t1*3 + 1], sectorColors[t1*3 + 2], 224));
 						g.fillPolygon(xPoints, yPoints, 3);
-						
+
 						//Triangle for tileset 2
 						xPoints = new int[] { (curX * 64) + 224, (curX * 64) + 224, (curX * 64) + 32 };
 						yPoints = new int[] { (curY * 64) + 224, (curY * 64) + 32, (curY * 64) + 224 };
 						g.setColor(new Color(sectorColors[t2*3], sectorColors[t2*3 + 1], sectorColors[t2*3 + 2], 224));
 						g.fillPolygon(xPoints, yPoints, 3);
 					}
-					
+
 					for (int checkX=-1; checkX<=1; checkX++) {
 						for (int checkY=-1; checkY<=1; checkY++) {
 							if (offMap((sectorX+checkX) * 4, (sectorY+checkY) * 4)) continue;
 							if (main.map.sectorPaletteGet(sectorX+checkX, sectorY+checkY) != main.map.sectorPaletteGet(sectorX, sectorY)) continue;
-							
+
 							final int xa = mapX + (checkX * 4);
 							final int ya = mapY + (checkY * 4);
 							final boolean diff1 = (main.map.sectorTileset1Get(sectorX+checkX, sectorY+checkY) != t1);
 							final boolean diff2 = (main.map.sectorTileset2Get(sectorX+checkX, sectorY+checkY) != t2);
-							
+
 							if (diff1) {
 								for (int x=0; x<4; x++) {
 									for (int y=0; y<4; y++) {
@@ -533,7 +533,7 @@ public class PanelMap extends JPanel implements Info {
 				}
 			}
 		}
-		
+
 		if (viewObjects) {
 			//debug old
 
@@ -639,22 +639,22 @@ public class PanelMap extends JPanel implements Info {
 
 	//width + height is kinda tacky. pls find some other way to calc sprites
 	public void drawSpriteDef(Graphics g, int i, int offset, int area, int x, int y, int width, int height){
-		if(main.sprites.Definitions[i].spriteStart == -1) return;
+		if(main.sprites.Definitions.get(i).spriteStart == -1) return;
 		for (int z = 0; z < width * height; z++){
-			SpriteDef hi2 = main.sprites.Definitions[i];
-			Sprite hi = main.sprites.Sprites[hi2.spriteStart+z];
+			SpriteDef hi2 = main.sprites.Definitions.get(i);
+			Sprite hi = main.sprites.Sprites.get(hi2.spriteStart+z);
 			drawCharTile(g, hi2, hi, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
 		}
 	}
 	public void drawSpriteDef(Graphics g, SpriteDef Definition, int offset, int area, int x, int y, int width, int height){
 		if(Definition.spriteStart == -1) return;
 		for (int z = 0; z < width * height; z++){
-			Sprite hi = main.sprites.Sprites[Definition.spriteStart+z];
+			Sprite hi = main.sprites.Sprites.get(Definition.spriteStart+z);
 			drawCharTile(g, Definition, hi, hi.index+offset, area, x-width, (y-height)-height/2, hi.x, hi.y, hi.flipX == 1, hi.flipY == 1);
 		}
 	}
 
-	//function to draw  a character tile from the spritedefs
+	//function to draw a character tile from the spritedefs
 	public void drawCharTile(Graphics g, SpriteDef Definition, Sprite sprite, int id, int area, int x, int y, int subX, int subY, boolean flipX, boolean flipY){
 
 		//draw char stuff
@@ -670,16 +670,13 @@ public class PanelMap extends JPanel implements Info {
 		//ofset from start of the character chr
 		int chroff = (addr - 0x18000)/0x10;
 		int calcId = id + chroff;
-		if (calcId < 0){
-			calcId = calcId;
-		}
 
 		//x*y*rgba
 		int[] pixels = new int[8*8*4];
 		for (int j = 0; j < pixels.length; j+=4) {
 			int[] parr = new int[]{Definition.p1, Definition.p2};
 			int[] paletteNum = main.palettes.sprite_palettes[parr[sprite.palette]];
-			int colorNum = main.gfx.characters[calcId].getValue(j/4);
+			int colorNum = main.gfx.characters.get(calcId).getValue(j/4);
 
 			for(int k = 0; k < 4; k++) {
 				if (colorNum != 0) {

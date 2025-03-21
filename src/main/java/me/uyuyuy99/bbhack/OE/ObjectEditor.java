@@ -20,7 +20,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-import java.util.Objects;
 
 public class ObjectEditor extends JFrame {
 

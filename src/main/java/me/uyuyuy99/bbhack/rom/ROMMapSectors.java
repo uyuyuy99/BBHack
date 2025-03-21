@@ -1,47 +1,51 @@
 package me.uyuyuy99.bbhack.rom;
 
 import me.uyuyuy99.bbhack.MainMenu;
-
 public class ROMMapSectors {
-	
+
 	private MainMenu main;
-	
+
 	public int[] mapTiles;
 	public boolean[] mapTileset;
 	public boolean[] mapEvent;
-	
+
 	public int[] sectorPalette;
 	public int[] sectorArea;
 	public int[] sectorTileset1;
 	public int[] sectorTileset2;
 
-	int[] banksMap = { 0x4010, 0x8010, 0xC010, 0x10010, 0x14010, 0x18010, 0x1C010 };
-	int[] banksSector = { 0x7810, 0xB810, 0xF810, 0x13810, 0x17810, 0x1B810, 0x1F810 };
-	
+	int[] banksMap = { 0x2000, 0x6000, 0xA000, 0xE000, 0x12000, 0x16000, 0x1A000 };
+	int[] banksSector = { 0x5800, 0x9800, 0xD800, 0x11800, 0x15800, 0x19800, 0x1D800 };
+
+	String usefile = "dumped/map.bin";
+	ROMAssetIO mapData;
+
 	public ROMMapSectors(MainMenu instance) {
 		main = instance;
-		
+
+		mapData = new ROMAssetIO(usefile);
+
 		//Map height * width in terms of 64x64 chunks
 		mapTiles = new int[0x100 * 0x100];
 		mapTileset = new boolean[0x100 * 0x100];
 		mapEvent = new boolean[0x100 * 0x100];
-		
+
 		//Same as above, divided by 4
 		sectorPalette = new int[0x40 * 0x40];
 		sectorArea = new int[0x40 * 0x40];
 		sectorTileset1 = new int[0x40 * 0x40];
 		sectorTileset2 = new int[0x40 * 0x40];
-		
+
 		//0000-1FFF (skip 1st bank)
 		int curBank = 0;
 		for (int offset : banksMap) {
 			for (int i=0; i<0x2000; i++) {
 				int tileOffs = offset + i; //Offset of current 64x64 map data
 				int arrayOffs = (curBank * 0x2000) + i;
-				int currentByte = main.rom.get(tileOffs);
-				
+				int currentByte = mapData.get(tileOffs);
+
 				mapTiles[arrayOffs] = currentByte % 0x40; //Get lower 6 bits only of map data, store in array
-				
+
 				int upper2 = currentByte / 0x40;
 				if (upper2 % 2 == 1) mapTileset[arrayOffs] = true; //If first bit is set
 				else mapTileset[arrayOffs] = false;
@@ -50,23 +54,23 @@ public class ROMMapSectors {
 			}
 			curBank++;
 		}
-		
+
 		//Lower 6 bits of 3800-3FFF (skip 1st bank)
 		curBank = 0;
 		for (int offset : banksSector) {
 			for (int i=0; i<0x200; i++) {
 				int tileOffs = offset + (i * 4); //Offset of current 256x256 sector data
 				int arrayOffs = (curBank * 0x200) + i;
-				
+
 				//First 6 bits of each byte
-				sectorPalette[arrayOffs] = main.rom.get(tileOffs) % 0x40;
-				sectorArea[arrayOffs] = main.rom.get(tileOffs + 1) % 0x40;
-				sectorTileset1[arrayOffs] = main.rom.get(tileOffs + 2) % 0x40;
-				sectorTileset2[arrayOffs] = main.rom.get(tileOffs + 3) % 0x40;
+				sectorPalette[arrayOffs] = mapData.get(tileOffs) % 0x40;
+				sectorArea[arrayOffs] = mapData.get(tileOffs + 1) % 0x40;
+				sectorTileset1[arrayOffs] = mapData.get(tileOffs + 2) % 0x40;
+				sectorTileset2[arrayOffs] = mapData.get(tileOffs + 3) % 0x40;
 			}
 			curBank++;
 		}
-		
+
 		//Print list of areas in game (testing purposes)
 //		List<Integer> sectorAreaList = Arrays.stream(sectorArea).boxed().distinct().sorted().toList();
 //		System.out.println("sector areas:");
@@ -74,7 +78,7 @@ public class ROMMapSectors {
 //			System.out.println(i);
 //		}
 	}
-	
+
 	public void save() {
 		//Lower 6 bits of 3800-3FFF (skip 1st bank)
 		int curBank = 0;
@@ -82,15 +86,15 @@ public class ROMMapSectors {
 			for (int i=0; i<0x200; i++) {
 				int tileOffs = offset + (i * 4); //Offset of current 256x256 sector data
 				int arrayOffs = (curBank * 0x200) + i;
-				
-				main.rom.write(tileOffs, (byte) (((main.rom.get(tileOffs) / 0x40) * 0x40) + sectorPalette[arrayOffs]));
-				main.rom.write(tileOffs + 1, (byte) (((main.rom.get(tileOffs + 1) / 0x40) * 0x40) + sectorArea[arrayOffs]));
-				main.rom.write(tileOffs + 2, (byte) (((main.rom.get(tileOffs + 2) / 0x40) * 0x40) + sectorTileset1[arrayOffs]));
-				main.rom.write(tileOffs + 3, (byte) (((main.rom.get(tileOffs + 3) / 0x40) * 0x40) + sectorTileset2[arrayOffs]));
+
+				main.rom.write(tileOffs, (byte) (((mapData.get(tileOffs) / 0x40) * 0x40) + sectorPalette[arrayOffs]));
+				main.rom.write(tileOffs + 1, (byte) (((mapData.get(tileOffs + 1) / 0x40) * 0x40) + sectorArea[arrayOffs]));
+				main.rom.write(tileOffs + 2, (byte) (((mapData.get(tileOffs + 2) / 0x40) * 0x40) + sectorTileset1[arrayOffs]));
+				main.rom.write(tileOffs + 3, (byte) (((mapData.get(tileOffs + 3) / 0x40) * 0x40) + sectorTileset2[arrayOffs]));
 			}
 			curBank++;
 		}
-		
+
 		//0000-1FFF (skip 1st bank)
 		curBank = 0;
 		for (int offset : banksMap) {
@@ -98,51 +102,51 @@ public class ROMMapSectors {
 				int tileOffs = offset + i; //Offset of current 64x64 map data
 				int arrayOffs = (curBank * 0x2000) + i;
 				int curByte = mapTiles[arrayOffs];
-				
+
 				boolean curTileset = mapTileset[arrayOffs];
 				boolean curEvent = mapEvent[arrayOffs];
-				
+
 				//Upper 2 bits
 				if (curTileset) {
 					curByte += 0x40;
 				} if (curEvent) {
 					curByte += 0x80;
 				}
-				
+
 				main.rom.write(tileOffs, (byte) curByte);
 			}
 			curBank++;
 		}
-		
+
 		main.rom.saveMap();
 	}
-	
+
 	public int mapTilesGet(int x, int y) {
 		return mapTiles[(y * 0x100) + x];
 	}
-	
+
 	public boolean mapTilesetGet(int x, int y) {
 		return mapTileset[(y * 0x100) + x];
 	}
-	
+
 	public boolean mapEventGet(int x, int y) {
 		return mapEvent[(y * 0x100) + x];
 	}
-	
+
 	public int sectorPaletteGet(int x, int y) {
 		return sectorPalette[(y * 0x40) + x];
 	}
-	
+
 	public int sectorAreaGet(int x, int y) {
 		return sectorArea[(y * 0x40) + x];
 	}
-	
+
 	public int sectorTileset1Get(int x, int y) {
 		return sectorTileset1[(y * 0x40) + x];
 	}
-	
+
 	public int sectorTileset2Get(int x, int y) {
 		return sectorTileset2[(y * 0x40) + x];
 	}
-	
+
 }

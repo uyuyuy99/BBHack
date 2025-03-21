@@ -1,6 +1,5 @@
 package me.uyuyuy99.bbhack.types.EBObjects;
 
-import me.uyuyuy99.bbhack.OE.PanelToolbarOE;
 import me.uyuyuy99.bbhack.types.EBObjects.scripts.*;
 
 import java.util.ArrayList;
@@ -448,7 +447,7 @@ public class EBProgrammable extends EBObject{
             i+=inc;
             currentAddr+=(short) inc;
         }
-        
+
     }
 }
 

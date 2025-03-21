@@ -3,16 +3,16 @@ package me.uyuyuy99.bbhack;
 import java.awt.Color;
 
 public interface Info {
-	
+
 	public static final int CHAR_OFFSET = 0xC1 - (int) 'A';
-	
+
 	public static final Color COLOR_GRID1 = Color.GRAY;
 	public static final Color COLOR_GRID2 = Color.GREEN;
 	public static final Color COLOR_FLASH = Color.BLUE;
 	public static final Color COLOR_OBJECT = new Color(255, 0, 255, 128);
 	public static final Color COLOR_BORDER = new Color(255, 0, 0, 128);
 	public static final Color COLOR_FADED = new Color(0, 0, 0, 224);
-	
+
 	public static final String[] tilesetNames = {
 		"[0] Suburbs 1",
 		"[1] Suburbs 2",
@@ -47,7 +47,7 @@ public interface Info {
 		"[30] Trashed Lab",
 		"[31] Test Tubes"
 	};
-	
+
 	public static final String[] statusNames = {
 		"Cold",
 		"Poison",
@@ -58,7 +58,7 @@ public interface Info {
 		"Stone",
 		"Fainted"
 	};
-	
+
 	public static final String[] characterNames = {
 		"(blank)",
 		"Ninten",
@@ -69,7 +69,7 @@ public interface Info {
 		"EVE",
 		"Flying Man",
 	};
-	
+
 	public static final String[] musicNames = {
 		"[00] (don't change)",
 		"[01] 8 Melodies (ocarina)",
@@ -123,7 +123,7 @@ public interface Info {
 		"[49] Cave of the Tail",
 		"[50] Right Before Giegue"
 	};
-	
+
 	public static final String[] soundEffectNames1 = {
 		"[00] Nothing",
 		"[01] Player attack",
@@ -138,7 +138,7 @@ public interface Info {
 		"[10] Rocket crash?",
 		"","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""
 	};
-	
+
 	public static final String[] soundEffectNames2 = {
 		"[00] Nothing",
 		"[01] Enemy attack ready",
@@ -154,7 +154,7 @@ public interface Info {
 		"[11] ?",
 		"","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""
 	};
-	
+
 	public static final String[] soundEffectNames3 = {
 		"[00] Nothing",
 		"[01] PK Freeze",
@@ -163,7 +163,7 @@ public interface Info {
 		"[04] ?",
 		"","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""
 	};
-	
+
 	public static final String[] directionNames = {
 		"[00] Up",
 		"[01] Up-right",
@@ -174,7 +174,7 @@ public interface Info {
 		"[06] Left",
 		"[07] Up-left"
 	};
-	
+
 	public static final String[] codeNames = {
 		"END",
 		"Jump to line",
@@ -284,7 +284,7 @@ public interface Info {
 		"Horizontal shake (EVE?)",
 		"XX-Stone routine"
 	};
-	
+
 	public static final String[] codeGroupNames = {
 		"Interaction",
 		"Simple",
@@ -296,7 +296,7 @@ public interface Info {
 		"Vehicles",
 		"Misc."
 	};
-	
+
 	public static final int[][] codeGroups = {
 		{0x5, 0x6, 0xA, 0xB, 0xC, 0xD, 0x35},
 		{0x0, 0x4, 0x8, 0xF, 0x3D, 0x44, 0x55, 0x56, 0x5A, 0x5B, 0x5C, 0x5D},
@@ -308,11 +308,11 @@ public interface Info {
 		{0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C},
 		{0x17, 0x3B, 0x3E, 0x5F, 0x60, 0x61, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A},
 	};
-	
+
 	public static final String forumThread = "http://bit.ly/BBHackThread";
-	
+
 	public static final String version = "2.0.1";
-	
+
 	public static final String aboutMessage =
 			"<html><body style='font-size:10px; font-family:Verdana;'><center><b>BB Hack v" + version + "<br/>" +
 			"All-in-one Earthbound Zero hacking tool<br/>" +

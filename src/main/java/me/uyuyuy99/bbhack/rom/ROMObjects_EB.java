@@ -5,24 +5,33 @@ import me.uyuyuy99.bbhack.types.EBObjects.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ROMObjects_EB
 {
 	private MainMenu main;
-	int[] main_banks_start = {0x20010, 0x22010, 0x24010};
-	int[] main_banks_end = {0x20010+0x1FE3, 0x22010+0x1EAB, 0x24010+0x1f76};
 	//wow! thats a lot of lists
 	public List<List<List<EBObject>>> Banks = new ArrayList<>();
+
+	//loaded bytedata
+	String[] bankfiles = {
+		"dumped/objbank_1.bin",
+		"dumped/objbank_2.bin",
+		"dumped/objbank_3.bin"
+	};
+	List<ROMAssetIO> bankdata = new ArrayList<>();
 
 	public ROMObjects_EB(MainMenu instance) {
 		main = instance;
 
+		//load files
+		for(String file : bankfiles){
+			bankdata.add(new ROMAssetIO(file));
+		}
 
-		for(int b = 0; b < main_banks_start.length; b++){
+		for(int b = 0; b < bankdata.size(); b++){
 			int i = 0; //i just acts like a tracker for the address. just in case
 			List<Short> mainPointers = new ArrayList<>();
 			while(true){
-				byte[] data = main.rom.getT(main_banks_start[b] + i, 2);
+				byte[] data = bankdata.get(b).getT(i, 2);
 				short word1 = (short) ((Byte.toUnsignedInt(data[1]) << 8) | Byte.toUnsignedInt(data[0]));
 				short whereamI = (short)(0x8000 + i);
 				if(!mainPointers.isEmpty()){
@@ -42,7 +51,7 @@ public class ROMObjects_EB
 				Banks.add(irrelevant);
 				List<Short> myPointers = new ArrayList<>();
 				while(true){
-					byte[] data = main.rom.getT(main_banks_start[b] + i, 2);
+					byte[] data = bankdata.get(b).getT(i, 2);
 					short word1 = (short) ((Byte.toUnsignedInt(data[1]) << 8) | Byte.toUnsignedInt(data[0]));
 					i += 2;
 					if(b == 0 && mp == 0){
@@ -61,21 +70,23 @@ public class ROMObjects_EB
 					}
 
 					int start,end;
-					start = main_banks_start[b] + Short.toUnsignedInt(myPointers.get(x)) - 0x8000;
+					start = Short.toUnsignedInt(myPointers.get(x)) - 0x8000;
 					if(x < myPointers.size() - 1){
-						end = main_banks_start[b] + Short.toUnsignedInt(myPointers.get(x+1)) - 0x8000;
+						end = Short.toUnsignedInt(myPointers.get(x+1)) - 0x8000;
 					} else if (mp < mainPointers.size() - 1){
-						end = main_banks_start[b] + Short.toUnsignedInt(mainPointers.get(mp+1)) - 0x8000;
+						end = Short.toUnsignedInt(mainPointers.get(mp+1)) - 0x8000;
 					} else {
-						end = main_banks_end[b];
+						end = bankdata.get(b).data.length;
 					}
-					objectData.add(main.rom.getT(start, end-start));
+					objectData.add(bankdata.get(b).getT(start, end-start));
 				}
 				List<EBObject> parsedData = new ArrayList<>();
 				for(int o = 0; o < objectData.size(); o++){
 					byte[] myData = objectData.get(o);
 					EBObject newObject = new EBObject(myData, (short) (i + 0x8000));
 					switch(newObject.type){
+						case STAIRS:
+						case HOLE:
 						case DOOR:
 							parsedData.add(new EBDoor(newObject, (short) (i + 0x8000)));
 							break;

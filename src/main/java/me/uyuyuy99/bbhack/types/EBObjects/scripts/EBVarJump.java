@@ -1,7 +1,6 @@
 package me.uyuyuy99.bbhack.types.EBObjects.scripts;
 import me.uyuyuy99.bbhack.types.EBObjects.EBObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class EBVarJump extends EBJump {

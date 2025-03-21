@@ -1,6 +1,5 @@
 package me.uyuyuy99.bbhack.types.EBObjects.scripts;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class EBVar extends EBScript {

@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
-
 public class EBObject {
     public enum DIRECTION {
         UP,
@@ -54,10 +52,10 @@ public class EBObject {
     public int x,y;
     public byte[] scriptbytes;
     public short start_addr;
-    
+
     //specifically type object so normal ints and bytes can be used
     public List<Object> script = new ArrayList<>();
-    
+
     public EBObject(byte[] myData, short myAddr){
         byte[] objectDef = Arrays.copyOf(myData, 4);
 
@@ -71,7 +69,7 @@ public class EBObject {
         scriptbytes = Arrays.copyOfRange(myData, 4, myData.length);
         start_addr = start_addr;
     }
-    
+
     public EBObject(){
     }
 

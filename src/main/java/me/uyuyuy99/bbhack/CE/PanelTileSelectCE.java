@@ -14,34 +14,34 @@ import java.awt.event.MouseListener;
 import java.awt.image.*;
 
 public class PanelTileSelectCE extends JPanel {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private MainMenu main;
 	private ChunkEditor CE;
-	
+
 	//Current scroll-bar view coordinates (UNITS: 64x64 tiles)
 	int viewX;
 	//Dimensions of the current map view (UNITS: 64x64 tiles)
 	int viewWidth;
 	int viewHeight;
-	
+
 	int tileSelected;
 	int palette;
-	
+
 	public PanelTileSelectCE(MainMenu instance, ChunkEditor CEInstance) {
 		main = instance;
 		CE = CEInstance;
-		
+
 		setBackground(Color.BLACK);
-		
+
 		viewX = 0;
 		viewWidth = 16;
 		viewHeight = 16;
-		
+
 		tileSelected = 0;
 		palette = 0;
-		
+
 		//Selecting chunks
 		this.addMouseListener(
 			new MouseListener() {
@@ -50,11 +50,11 @@ public class PanelTileSelectCE extends JPanel {
 						int newValue = (((event.getX() / 32) + viewX) * viewHeight) + (event.getY() / 32);
 						if (newValue >= 128) return;
 						tileSelected = newValue;
-						
+
 						repaint();
 					}
 				}
-				
+
 				//Random other unused methods
 				public void mouseEntered(MouseEvent event) {
 					//Vegetarian
@@ -67,7 +67,7 @@ public class PanelTileSelectCE extends JPanel {
 				}
 			}
 		);
-		
+
 		//Change palette from dropdown menu
 		CE.panelPaletteSelect.palette.addItemListener(
 			new ItemListener() {
@@ -77,7 +77,7 @@ public class PanelTileSelectCE extends JPanel {
 				}
 			}
 		);
-		
+
 		//Change alternate tileset options
 		CE.panelPaletteSelect.altCheckbox.addItemListener(
 			new ItemListener() {
@@ -93,33 +93,33 @@ public class PanelTileSelectCE extends JPanel {
 			}
 		);
 	}
-	
+
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
+
 		int curX = 0;
 		int curY = 0;
-		
+
 		viewWidth = getWidth() / 32;
 		viewHeight = getHeight() / 32;
-		
+
 		for (int i=0; i<(viewWidth*viewHeight); i++) {
 			int[] pixels = new int[256 * 3]; //3 values for each color
-			
+
 			int tileNum = (viewX * viewHeight) + i;
 			if (tileNum < 128) {
 				Tile16 curTile;
 				if (CE.panelPaletteSelect.altCheckbox.isSelected() &&  CE.useAlternateTileset) {
-					curTile = main.gfx.graphics16[(CE.panelPaletteSelect.altDropdown.getSelectedIndex() * 128) + tileNum];
+					curTile = main.gfx.graphics16.get((CE.panelPaletteSelect.altDropdown.getSelectedIndex() * 128) + tileNum);
 				} else {
-					curTile = main.gfx.graphics16[(CE.selectedTileset1 * 128) + tileNum];
+					curTile = main.gfx.graphics16.get((CE.selectedTileset1 * 128) + tileNum);
 				}
-				
+
 				for (int j=0; j<pixels.length; j+=3) {
 					int paletteNum = (CE.selectedPalette * 4) + palette;
 					int colorNum = curTile.getValue(j/3);
-					
+
 					pixels[j] = ROMPalettes.colors[(main.palettes.palettes[paletteNum][colorNum] * 3)];
 					pixels[j+1] = ROMPalettes.colors[(main.palettes.palettes[paletteNum][colorNum] * 3) + 1];
 					pixels[j+2] = ROMPalettes.colors[(main.palettes.palettes[paletteNum][colorNum] * 3) + 2];
@@ -128,21 +128,21 @@ public class PanelTileSelectCE extends JPanel {
 				WritableRaster raster = tile.getRaster();
 				raster.setPixels(0, 0, 16, 16, pixels);
 				g.drawImage(tile.getScaledInstance(32, 32, Image.SCALE_REPLICATE), curX * 32, curY * 32, null);
-				
+
 				//Draw grid
 				if (tileNum < 128) {
 					g.setColor(Color.GRAY);
 					g.drawLine((curX * 32) + 31, (curY * 32), (curX * 32) + 31, (curY * 32) + 31);
 					g.drawLine((curX * 32), (curY * 32) + 31, (curX * 32) + 31, (curY * 32) + 31);
 				}
-				
+
 				//Draw transparent square to indicate currently selected tile
 				if (tileNum == tileSelected) {
 					float alpha = 0.5F;
 					g.setColor(new Color(1.0F, 1.0F, 0.0F, alpha));
 					g.fillRect(curX * 32, curY * 32, 32, 32);
 				}
-				
+
 				curY++;
 				if (curY >= viewHeight) {
 					curY = 0;
@@ -151,5 +151,5 @@ public class PanelTileSelectCE extends JPanel {
 			}
 		}
 	}
-	
+
 }

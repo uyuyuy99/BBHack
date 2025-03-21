@@ -1,6 +1,7 @@
 package me.uyuyuy99.bbhack.types.EBObjects;
 import me.uyuyuy99.bbhack.types.SpriteDef;
 import java.util.Arrays;
+import java.util.List;
 
 public class EBNPC extends EBProgrammable{
     public SpriteDef mainSprite;
@@ -21,24 +22,23 @@ public class EBNPC extends EBProgrammable{
         scriptbytes = Arrays.copyOfRange(original.scriptbytes, 2, original.scriptbytes.length);
         ParseScript(scriptbytes, (short) 6);
     }
-    
-    public void DoSpriteStuff(SpriteDef[] Defs){
-        for(int i = 0; i < Defs.length; i++){
-            SpriteDef Definition = Defs[i];
+
+    public void DoSpriteStuff(List<SpriteDef> Defs){
+        for(SpriteDef Definition : Defs){
             if(Definition.addr == myspritePointer){
                 mainSprite = Definition;
-                mainI = i;
+                mainI = Defs.indexOf(Definition);
                 //get the direction sprite (mostly for npcs)
                 getDirectionFromMain(Defs);
             }
             if(mysprite != null){break;}
         }
     }
-    
-    public void getDirectionFromMain(SpriteDef[] Defs){
-        mysprite = Defs[mainI+dir.ordinal()];
+
+    public void getDirectionFromMain(List<SpriteDef> Defs){
+        mysprite = Defs.get(mainI+dir.ordinal());
     }
-    
+
 }
 
 

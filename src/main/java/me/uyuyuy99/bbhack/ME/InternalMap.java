@@ -1,7 +1,6 @@
 package me.uyuyuy99.bbhack.ME;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseWheelEvent;
@@ -11,23 +10,23 @@ import javax.swing.*;
 
 
 public class InternalMap extends JInternalFrame {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private PanelMap panelMap;
-	
+
 	public JScrollBar scrollH;
 	public JScrollBar scrollV;
-	
+
 	public InternalMap(PanelMap panelInstance) {
 		panelMap = panelInstance;
-		
+
 		scrollH = new JScrollBar(JScrollBar.HORIZONTAL, 0, 15, 0, 270);
 		scrollV = new JScrollBar(JScrollBar.VERTICAL, 0, 15, 0, 270);
-		
+
 		add(scrollH, BorderLayout.SOUTH);
 		add(scrollV, BorderLayout.EAST);
-		
+
 		scrollH.addAdjustmentListener(
 			new AdjustmentListener() {
 				public void adjustmentValueChanged(AdjustmentEvent event) {
@@ -35,7 +34,7 @@ public class InternalMap extends JInternalFrame {
 				}
 			}
 		);
-		
+
 		scrollV.addAdjustmentListener(
 			new AdjustmentListener() {
 				public void adjustmentValueChanged(AdjustmentEvent event) {
@@ -43,7 +42,7 @@ public class InternalMap extends JInternalFrame {
 				}
 			}
 		);
-		
+
 		addMouseWheelListener(
 			new MouseWheelListener() {
 				public void mouseWheelMoved(MouseWheelEvent event) {
@@ -81,5 +80,5 @@ public class InternalMap extends JInternalFrame {
 			}
 		);
 	}
-	
+
 }

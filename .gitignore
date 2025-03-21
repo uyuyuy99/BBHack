@@ -18,3 +18,7 @@ buildNumber.properties
 .classpath
 
 /target/
+
+#project artifacts
+dumped/
+.jar

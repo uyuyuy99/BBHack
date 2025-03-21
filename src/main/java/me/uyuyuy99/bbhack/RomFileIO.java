@@ -6,18 +6,18 @@ import java.io.RandomAccessFile;
 import java.util.Arrays;
 
 public class RomFileIO {
-	
-	byte[] data;
+
+	public byte[] data;
 	File rompath;
-	
+
 	public RomFileIO(File rompathGiven) {
 		load(rompathGiven);
 	}
-	
+
 	public RomFileIO() {
 		//Bananas are pretty great
 	}
-	
+
 	public void load(File rompathGiven) {
 		rompath = rompathGiven;
 		try {
@@ -29,7 +29,7 @@ public class RomFileIO {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void save() {
 		try {
 			RandomAccessFile rom = new RandomAccessFile(rompath, "rw");
@@ -69,15 +69,15 @@ public class RomFileIO {
 		}
 		return bytes;
 	}
-	
+
 	public void write(int offset, byte b) {
 		data[offset] = b;
 	}
-	
+
 	public void saveMap() {
 		try {
 			RandomAccessFile rom = new RandomAccessFile(rompath, "rw");
-			
+
 			final int START = 0x2010;
 			final int END = 0x20010;
 
@@ -88,11 +88,11 @@ public class RomFileIO {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void saveObjects() {
 		try {
 			RandomAccessFile rom = new RandomAccessFile(rompath, "rw");
-			
+
 			final int START = 0x20010;
 			final int END = 0x25DF6;
 
@@ -103,5 +103,5 @@ public class RomFileIO {
 			e.printStackTrace();
 		}
 	}
-	
+
 }
